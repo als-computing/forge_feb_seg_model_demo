@@ -18,7 +18,7 @@ test.py
 
 
 # output dir
-results/
+results*/
 data/
 .DS_Store
 /models/
