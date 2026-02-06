@@ -1,4 +1,4 @@
-# SINGLE NODE(4 GPUS)
+# SINGLE NODE(4 GPUS) - Inference without tiling
 
 ### Performance (Perlmutter A100)
 
