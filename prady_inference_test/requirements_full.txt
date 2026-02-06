@@ -1,0 +1,18 @@
+torch
+torchvision
+sam3 @ git+https://github.com/facebookresearch/sam3.git
+einops
+timm>=1.0.17
+iopath>=0.1.10
+fvcore
+huggingface_hub
+numpy>=1.26,<3
+pillow
+opencv-python
+tifffile
+decord
+matplotlib
+pycocotools
+tqdm
+psutil
+ftfy
