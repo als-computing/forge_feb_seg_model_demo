@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -q regular
 #SBATCH -A m4880_g
-#SBATCH -N 16                          # 4 nodes = 16 GPUs total
+#SBATCH -N 8                          # 4 nodes = 16 GPUs total
 #SBATCH -C gpu
-#SBATCH --time=00:15:00               # Reduce to 1 hour (500 images takes ~10 min)
+#SBATCH --time=00:30:00               # Reduce to 1 hour (500 images takes ~10 min)
 #SBATCH --ntasks-per-node=1           
 #SBATCH --gpus-per-node=4             
 #SBATCH --cpus-per-task=128           
@@ -15,7 +15,7 @@ export MASTER_ADDR=$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)
 export MASTER_PORT=29500
 
 # Set your parameters
-export OUTPUT_DIR="./results/rec20211222_125057_petiole4_v4_$(date +%Y%m%d_%H%M%S)"
+export OUTPUT_DIR="./results/rec20211222_125057_petiole4_v4_ckptv2_$(date +%Y%m%d_%H%M%S)"
 export BATCH_SIZE=8
 export INPUT_DIR="./sample_data/rec20211222_125057_petiole4"
 
@@ -60,7 +60,7 @@ torchrun \
     --prompts 'Cortex' 'Phloem Fibers' 'Air-based Pith cells' 'Water-based Pith cells' 'Xylem vessels' \
     --bpe-path '/pscratch/sd/x/xchong/sam3_finetune/sam3/assets/bpe_simple_vocab_16e6.txt.gz' \
     --original-checkpoint '/pscratch/sd/x/xchong/sam3_finetune/sam3/.cache/huggingface/models--facebook--sam3/snapshots/3c879f39826c281e95690f02c7821c4de09afae7/sam3.pt' \
-    --finetuned-checkpoint '/pscratch/sd/x/xchong/sam3_finetune/sam3/sam3_logs_plants_with_seg_patches_cleaned_640_0_20tiff_20/checkpoints/checkpoint.pt' \
+    --finetuned-checkpoint '/pscratch/sd/x/xchong/sam3_finetune/sam3/sam3_logs_plants_with_seg_patches_cleaned_640_25_20tiff_20_corr/checkpoints/checkpoint.pt' \
 "
 
 # Record end time and calculate duration
