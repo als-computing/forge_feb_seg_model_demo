@@ -3,8 +3,8 @@ module load conda
 conda activate sam3
 
 torchrun --nproc_per_node=4 --nnodes=1 -m src.inference_v3 \
-    --input-dir ./sample_data/small_samples \
-    --output-dir ./results_finetuned_small_samples \
+    --input-dir ./sample_data/20260211_petiole1_12_6 \
+    --output-dir ./20260211_petiole1_12_6_v3_ckptv1_p640c0.5 \
     --patch-size 640 \
     --batch-size 1 \
     --confidence 0.5 \
