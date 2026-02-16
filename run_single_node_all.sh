@@ -19,7 +19,7 @@ DINO_FINETUNED_CHECKPOINT="/pscratch/sd/x/xchong/lightly/out_slurm_vitl16/my_exp
 BPE_PATH="/pscratch/sd/x/xchong/sam3_finetune/sam3/assets/bpe_simple_vocab_16e6.txt.gz"
 
 
-conda activate sam3
+conda activate sam3_demo
 # SAM3 inference
 torchrun --nproc_per_node=4 --nnodes=1 -m src.inference_v5 \
     --input-dir "$INPUT_DIR" \
