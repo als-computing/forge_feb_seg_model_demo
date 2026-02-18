@@ -9,6 +9,7 @@ import torch.nn.functional as F
 import argparse
 import torch.distributed as dist
 from torch.utils.data.distributed import DistributedSampler
+import os
 
 # ------------------------
 # Class definitions
@@ -34,6 +35,25 @@ CLASS_NAMES = {
 }
 
 IGNORE_CLASSES = [255]
+
+def setup_distributed():
+    """Initialize distributed training environment"""
+    if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
+        rank = int(os.environ['RANK'])
+        world_size = int(os.environ['WORLD_SIZE'])
+        local_rank = int(os.environ['LOCAL_RANK'])
+        
+        dist.init_process_group(backend='nccl')
+        torch.cuda.set_device(local_rank)
+        
+        return rank, world_size, local_rank
+    else:
+        return 0, 1, 0
+
+def cleanup_distributed():
+    """Cleanup distributed environment"""
+    if dist.is_initialized():
+        dist.destroy_process_group()
 
 def mask_to_color(mask_array):
     """
@@ -198,12 +218,9 @@ def main():
     parser.add_argument('--num-workers', type=int, default=4, help='Number of dataloader workers')
     args = parser.parse_args()
     
-    # Initialize distributed training
-    dist.init_process_group(backend='nccl')
-    local_rank = dist.get_rank()
-    world_size = dist.get_world_size()
-    torch.cuda.set_device(local_rank)
-    device = torch.device(f'cuda:{local_rank}')
+    # Setup distributed
+    rank, world_size, local_rank = setup_distributed()
+    device = torch.device(f'cuda:{local_rank}' if torch.cuda.is_available() else 'cpu')
     
     # Setup paths
     IMG_DIR = Path(args.input_dir)
@@ -213,35 +230,42 @@ def main():
     CKPT_PATH = args.finetuned_checkpoint
     
     # Create output directories (only on rank 0)
-    if local_rank == 0:
+    if rank == 0:
         OUTPUT_MASK_DIR.mkdir(parents=True, exist_ok=True)
         if args.save_overlay:
             OUTPUT_OVERLAY_DIR.mkdir(parents=True, exist_ok=True)
     
     # Wait for rank 0 to create directories
-    dist.barrier()
+    if dist.is_initialized():
+        dist.barrier()
     
     # Load model
-    if local_rank == 0:
+    if rank == 0:
         print("Loading model...")
     model = lightly_train.load_model(CKPT_PATH)
     model.eval()
     model = model.to(device)
-    if local_rank == 0:
+    if rank == 0:
         print(f"Model loaded on {world_size} GPU(s)")
     
     # Setup dataset and dataloader with distributed sampler
     dataset = ImageDataset(IMG_DIR)
-    sampler = DistributedSampler(dataset, num_replicas=world_size, rank=local_rank, shuffle=False)
+    
+    if world_size > 1:
+        sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank, shuffle=False)
+    else:
+        sampler = None
+    
     dataloader = DataLoader(
         dataset, 
         batch_size=args.batch_size, 
         sampler=sampler,
+        shuffle=False if sampler else False,
         num_workers=args.num_workers,
         pin_memory=True
     )
     
-    if local_rank == 0:
+    if rank == 0:
         print(f"Total images: {len(dataset)}")
         print(f"Batch size per GPU: {args.batch_size}")
         print(f"Number of GPUs: {world_size}")
@@ -269,15 +293,15 @@ def main():
                 # Get unique classes
                 pred_unique = np.unique(pred_mask_np)
                 
-                if local_rank == 0:
-                    print(f"GPU {local_rank}: {img_name}")
+                if rank == 0:
+                    print(f"GPU {rank}: {img_name}")
                     print(f"  Predicted classes: {pred_unique}")
                 
                 # Save mask as 1-channel grayscale (class indices)
                 mask_save_path = OUTPUT_MASK_DIR / img_name
                 Image.fromarray(pred_mask_np.astype(np.uint8), mode='L').save(mask_save_path)
                 
-                if local_rank == 0:
+                if rank == 0:
                     print(f"  Saved mask to: {mask_save_path}")
                 
                 # Save overlay if requested
@@ -295,23 +319,24 @@ def main():
                     overlay_save_path = OUTPUT_OVERLAY_DIR / img_name
                     Image.fromarray(pred_overlay).save(overlay_save_path)
                     
-                    if local_rank == 0:
+                    if rank == 0:
                         print(f"  Saved overlay to: {overlay_save_path}")
                 
-                if local_rank == 0:
+                if rank == 0:
                     print("-" * 70)
     
     # Wait for all processes to finish
-    dist.barrier()
+    if dist.is_initialized():
+        dist.barrier()
     
-    if local_rank == 0:
+    if rank == 0:
         print(f"\nInference complete!")
         print(f"Masks saved to: {OUTPUT_MASK_DIR}")
         if args.save_overlay:
             print(f"Overlays saved to: {OUTPUT_OVERLAY_DIR}")
     
     # Cleanup
-    dist.destroy_process_group()
+    cleanup_distributed()
 
 if __name__ == "__main__":
     main()
