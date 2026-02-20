@@ -5,7 +5,7 @@ module load conda
 # Define base paths with timestamp
 INPUT_DIR="/pscratch/sd/x/xchong/sam3_finetune/seg_annotation_pipeline2/data4/images"
 RESULTS_BASE="./results/data4_7classes_envtest_$(date +%Y%m%d_%H%M%S)"
-#RESULTS_BASE="./results/data4_7classes_envtest_20260220_011145"
+#RESULTS_BASE="./results/data4_7classes_envtest_20260220_095240"
 SAM3_RESULTS="${RESULTS_BASE}/sam3"
 CELLPOSE_RESULTS="${RESULTS_BASE}/cellpose"
 DINO_RESULTS="${RESULTS_BASE}/dino"
@@ -64,20 +64,15 @@ python -m src.combine_sam_dino_v2 \
     --semantic-masks-dir "$DINO_RESULTS/semantic_masks" \
     --output-dir "$COMBINED_OUTPUT/sam_dino"
 
-# # Extract Hydrated and Dehydrated Xylem regions
-# python -m src.extract_region \
-#     --input-dir "$INPUT_DIR" \
-#     --semantic-masks-dir "$DINO_RESULTS/semantic_masks" \
-#     --instance-masks-dir "$SAM3_RESULTS" \
-#     --output-dir "$COMBINED_OUTPUT/extract_regions" \
-#     --class-name "Hydrated_Xylem_vessels"
+# Extract Hydrated and Dehydrated Xylem regions
+python -m src.extract_region \
+    --input-dir "$INPUT_DIR" \
+    --semantic-masks-dir "$DINO_RESULTS/semantic_masks" \
+    --instance-masks-dir "$SAM3_RESULTS" \
+    --output-dir "$COMBINED_OUTPUT/extract_regions" \
+    --xylem-mode all \
+    --dilate-px 5      # increase if boundary ring still visible, decrease if too much erosion
 
-# python -m src.extract_region \
-#     --input-dir "$INPUT_DIR" \
-#     --semantic-masks-dir "$DINO_RESULTS/semantic_masks" \
-#     --instance-masks-dir "$SAM3_RESULTS" \
-#     --output-dir "$COMBINED_OUTPUT/extract_regions" \
-#     --class-name "Dehydrated_Xylem_vessels"
 
 # #run cellpose3d
 # torchrun --nproc_per_node=4 --nnodes=1 -m src.inference_cellpose_3d_v1 \
