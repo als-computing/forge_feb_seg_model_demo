@@ -9,6 +9,7 @@ import argparse
 import torch
 import torch.distributed as dist
 import os
+import time
 
 def setup_distributed():
     """Initialize distributed training environment"""
@@ -55,6 +56,7 @@ def main():
     parser.add_argument('--output-dir', type=str, required=True, help='Output directory')
     parser.add_argument('--finetuned-checkpoint', type=str, required=True, help='Path to finetuned model')
     parser.add_argument('--save-overlay', action='store_true', help='Save overlay images (default: False)')
+    parser.add_argument('--batch-size', type=int, default=8, help='Batch size per GPU (default: 8)')
     args = parser.parse_args()
     
     # Setup distributed
@@ -97,65 +99,69 @@ def main():
         end_idx = start_idx + files_per_gpu
     
     local_files = test_files[start_idx:end_idx]
-    local_data = [tifffile.imread(f) for f in local_files]
-    
+
+    # ── REMOVED: bulk preload of all images into RAM ──
+    # local_data = [tifffile.imread(f) for f in local_files]  # <-- was the bottleneck
+
     if rank == 0:
         print(f"Total images: {len(test_files)}")
-    print(f"Rank {rank}: Processing {len(local_data)} images")
+    print(f"Rank {rank}: Processing {len(local_files)} images")
     
-    # Load model and run inference
+    # Load model
     if rank == 0:
         print("Running inference...")
     
     model = models.CellposeModel(gpu=True, pretrained_model=model_path)
-    masks = model.eval(local_data, batch_size=32)[0]
-    
-    if rank == 0:
-        print(f"Inference complete! Detected cells in each image:")
-    
-    # Save masks and overlays
-    for i, (file, mask, image) in enumerate(zip(local_files, masks, local_data)):
+
+    # ── CHANGED: stream images one at a time instead of bulk eval ──
+    for file in local_files:
+        t0 = time.time()
+
+        # Load single image on demand
+        image = tifffile.imread(file)
         filename = Path(file).stem
-        print(f"Rank {rank}: {Path(file).name}: {mask.max()} cells")
-        
+
+        # Run inference on single image
+        mask = model.eval(image, batch_size=args.batch_size)[0]
+
+        elapsed = time.time() - t0
+        print(f"Rank {rank}: {Path(file).name}: {mask.max()} cells ({elapsed:.1f}s)")
+
         # Save instance mask as TIFF
         tifffile.imwrite(mask_dir / f"{filename}_mask.tif", mask.astype(np.uint16))
-        
+
         # Create and save overlay if requested
         if args.save_overlay:
-            # Create overlay using the new method
             mask_np = np.array(mask)
             img_np = image
-            
+
             # If mask is RGB, take one channel
             if mask_np.ndim == 3:
                 mask_np = mask_np[..., 0]
-            
+
             # Normalize image for display using percentile normalization
             img_disp = normalize_image_percentile(img_np, lower_percentile=1, upper_percentile=99)
-            
+
             # Pre-compute colors for ALL objects (fixed seed for consistency)
-            rng = np.random.default_rng(42)  # Fixed seed
+            rng = np.random.default_rng(42)
             all_instance_ids = np.unique(mask_np)
             color_map = {}
             for instance_id in all_instance_ids:
-                if instance_id == 0:  # Skip background
+                if instance_id == 0:
                     continue
                 color_map[instance_id] = rng.random(3)
-            
+
             # Create full image overlay
             rgb_mask_full = np.zeros((*mask_np.shape, 3), dtype=np.float32)
             for instance_id in np.unique(mask_np):
                 if instance_id == 0:
                     continue
                 rgb_mask_full[mask_np == instance_id] = color_map[instance_id]
-            
-            # Create full overlay
+
             overlay_full = np.stack([img_disp, img_disp, img_disp], axis=-1).astype(np.float32) / 255.0
             overlay_full = overlay_full * 0.8 + rgb_mask_full * 0.2
             overlay_full = (overlay_full * 255).astype(np.uint8)
-            
-            # Save overlay
+
             overlay_dir = output_dir / "instance_masks_overlay"
             overlay_img = Image.fromarray(overlay_full)
             overlay_img.save(overlay_dir / f"{filename}_overlay.png")
