@@ -4,31 +4,13 @@ from PIL import Image
 import cv2
 from pathlib import Path
 from collections import defaultdict
-from multiprocessing import Pool, cpu_count
+from concurrent.futures import ProcessPoolExecutor, as_completed  # CHANGED
+from multiprocessing import cpu_count                              # CHANGED
 from functools import partial
 import argparse
 
-def create_class_regions(semantic_mask):
-    """
-    Create a single mask for each class from the semantic segmentation mask.
-    
-    Args:
-        semantic_mask: numpy array where each pixel value represents a class ID
-    
-    Returns:
-        dict mapping class_id to binary mask (region)
-    """
-    class_regions = {}
-    unique_classes = np.unique(semantic_mask)
-    
-    for class_id in unique_classes:
-        region_mask = (semantic_mask == class_id).astype(np.uint8)
-        class_regions[int(class_id)] = region_mask
-    
-    return class_regions
 
-
-def assign_objects_to_classes(object_mask, class_regions):
+def assign_objects_to_classes(object_mask, semantic_mask):  # CHANGED: takes semantic_mask directly
     """
     Assign class IDs to objects based on which region they fall into.
     Uses majority voting with threshold - assigns the class that covers most of the object.
@@ -38,26 +20,21 @@ def assign_objects_to_classes(object_mask, class_regions):
     unique_objects = unique_objects[unique_objects != 0]
     
     MIN_OVERLAP_THRESHOLD = 30  # Require at least 30% overlap
+
+    obj_flat = object_mask.ravel()   # CHANGED
+    sem_flat = semantic_mask.ravel() # CHANGED
     
     for obj_id in unique_objects:
-        obj_pixels = (object_mask == obj_id)
-        obj_area = np.sum(obj_pixels)
+        obj_pixels = obj_flat == obj_id  # CHANGED
+        obj_area = obj_pixels.sum()      # CHANGED
         
-        best_class = None
-        best_overlap = 0
-        best_overlap_pct = 0
-        
-        for class_id, region_mask in class_regions.items():
-            if class_id == -1:
-                continue
-                
-            overlap = np.sum(obj_pixels & (region_mask > 0))
-            overlap_pct = (overlap / obj_area * 100) if obj_area > 0 else 0
-            
-            if overlap > best_overlap:
-                best_overlap = overlap
-                best_overlap_pct = overlap_pct
-                best_class = class_id
+        if obj_area == 0:
+            object_to_class[int(obj_id)] = None
+            continue
+
+        counts = np.bincount(sem_flat[obj_pixels].astype(np.int64))  # CHANGED
+        best_class = int(np.argmax(counts))                           # CHANGED
+        best_overlap_pct = counts[best_class] / obj_area * 100        # CHANGED
         
         if best_overlap_pct >= MIN_OVERLAP_THRESHOLD:
             object_to_class[int(obj_id)] = best_class
@@ -180,14 +157,14 @@ def process_single_file(tiff_path, mask_tiff_path, semantic_mask_path, output_di
         
         semantic_mask = class_id_mask
     
-    class_regions = create_class_regions(semantic_mask)
-    object_to_class = assign_objects_to_classes(object_mask, class_regions)
+    # CHANGED: removed create_class_regions, pass semantic_mask directly
+    object_to_class = assign_objects_to_classes(object_mask, semantic_mask)
     
     base_name = Path(tiff_path).stem
     output_path = Path(output_dir) / f"{base_name}_overlay.png"
     save_object_overlay(object_mask, object_to_class, tiff_path, output_path)
     
-    return object_to_class, class_regions
+    return object_to_class
 
 
 def process_file_wrapper(args):
@@ -214,7 +191,7 @@ def batch_process(images_dir, masks_dir, semantic_masks_dir, output_dir, num_wor
         masks_dir: directory containing mask files (*_mask.tif or *_mask.tiff)
         semantic_masks_dir: directory containing semantic mask files (*.png or *.tiff)
         output_dir: directory to save overlay images
-        num_workers: number of parallel workers (default: CPU count - 1)
+        num_workers: number of parallel workers (default: min(cpu_count - 1, 16))
     """
     images_dir = Path(images_dir)
     image_files = list(images_dir.glob("*.tiff")) + list(images_dir.glob("*.tif"))
@@ -246,16 +223,19 @@ def batch_process(images_dir, masks_dir, semantic_masks_dir, output_dir, num_wor
     if not tasks:
         print("No files to process!")
         return
+
+    if num_workers is None:                                      # CHANGED
+        num_workers = max(1, min(cpu_count() - 1, 16))          # CHANGED
     
-    if num_workers is None:
-        num_workers = max(1, cpu_count() - 1)
-    
-    # Add index and total to each task
     total = len(tasks)
     tasks_with_index = [(img, mask, sem, out, i+1, total) for i, (img, mask, sem, out) in enumerate(tasks)]
     
-    with Pool(processes=num_workers) as pool:
-        results = pool.map(process_file_wrapper, tasks_with_index)
+    # CHANGED: replaced Pool.map with ProcessPoolExecutor + as_completed
+    results = []
+    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+        futures = {executor.submit(process_file_wrapper, t): t for t in tasks_with_index}
+        for future in as_completed(futures):
+            results.append(future.result())
     
     # Summary
     processed_count = sum(1 for success, _ in results if success)
@@ -281,7 +261,7 @@ if __name__ == "__main__":
     parser.add_argument('--instance-masks-dir', required=True, help='Directory containing instance masks')
     parser.add_argument('--semantic-masks-dir', required=True, help='Directory containing semantic masks')
     parser.add_argument('--output-dir', required=True, help='Directory to save output overlays')
-    parser.add_argument('--num-workers', type=int, default=None, help='Number of parallel workers (default: CPU count - 1)')
+    parser.add_argument('--num-workers', type=int, default=None, help='Number of parallel workers (default: min(cpu_count - 1, 16))')
     
     args = parser.parse_args()
     
