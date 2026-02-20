@@ -36,17 +36,19 @@ pip install -r requirements.txt
 To run the complete pipeline on NERSC:
 
 ```bash
-./run_single_node_all.sh
+./run_single_node_all_7classes.sh
 ```
 
 This script will:
 1. Run SAM3 inference (uses `sam3_demo` environment)
 2. Run Cellpose inference (uses `dino_demo` environment)
 3. Run DINO inference (uses `dino_demo` environment)
-4. Combine Cellpose + DINO results
-5. Combine SAM3 + DINO results
+4. Run in parallel (CPU-based, no GPU required):
+   - Combine Cellpose + DINO results
+   - Combine SAM3 + DINO results
+   - Extract Hydrated and Dehydrated Xylem regions
 
-**Note**: The three model inferences can be parallelized in production deployment. The combination steps are CPU-based and do not require GPU.
+**Note**: The three model inferences can be parallelized in production deployment. All post-processing steps (4) are CPU-based and independent of each other.
 
 ### Run Individual Tasks
 
@@ -71,9 +73,12 @@ squeue -u $USER
 - **Cellpose**: Instance segmentation for cell detection
 - **DINO**: Semantic segmentation for tissue classification
 
-### Stage 2: Result Combination (CPU-based)
+### Stage 2: Post-Processing (CPU-based, Parallel)
 - **Cellpose + DINO**: Assigns semantic class labels to detected cell instances
 - **SAM3 + DINO**: Filters SAM3 predictions using semantic mask guidance
+- **Region Extraction**: Crops original images and filters instance masks to semantic regions; supports separate extraction of Hydrated and Dehydrated Xylem vessels
+
+> **Note**: All three post-processing steps are independent and can be run in parallel.
 
 ## Output Structure
 
@@ -82,7 +87,7 @@ After running the pipeline, results are organized as follows:
 ```
 results/
 │
-├── data4_envtest_YYYYMMDD_HHMMSS/
+├── data4_7classes_envtest_YYYYMMDD_HHMMSS/
 │   │
 │   ├── sam3/
 │   │   ├── Cortex/
@@ -103,7 +108,10 @@ results/
 │   │   ├── Water-based_Pith_cells/
 │   │   │   └── ...
 │   │   │
-│   │   ├── Xylem_vessels/
+│   │   ├── Hydrated_Xylem_vessels/
+│   │   │   └── ...
+│   │   │
+│   │   ├── Dehydrated_Xylem_vessels/
 │   │   │   └── ...
 │   │   │
 │   │   ├── combined/
@@ -144,17 +152,30 @@ results/
 │       │   ├── image2_overlay.png
 │       │   └── ...
 │       │
-│       └── sam_dino/
-│           ├── image1_overlay.tif       # SAM3 + DINO filtered results
-│           ├── image2_overlay.tif
-│           └── ...
+│       ├── sam_dino/
+│       │   ├── image1_overlay.tif       # SAM3 + DINO filtered results
+│       │   ├── image2_overlay.tif
+│       │   └── ...
+│       │
+│       └── extract_regions/
+│           ├── Xylem_vessels/
+│           │   ├── images/              # Masked original images (all xylem)
+│           │   └── masks/               # Filtered instance masks
+│           │
+│           ├── Hydrated_Xylem_vessels/
+│           │   ├── images/              # Masked original images
+│           │   └── masks/               # Hydrated-only instance masks
+│           │
+│           └── Dehydrated_Xylem_vessels/
+│               ├── images/              # Masked original images
+│               └── masks/               # Dehydrated-only instance masks
 ```
 
 ### Output File Descriptions
 
 #### SAM3 Output
 - **Class-specific folders**: Binary masks for each anatomical class
-- **combined/**: Multi-class segmentation masks (class IDs: 1-6)
+- **combined/**: Multi-class segmentation masks (class IDs: 1-7)
 - **combined_overlay/**: Color-coded visualization overlays
 
 #### Cellpose Output
@@ -168,6 +189,7 @@ results/
 #### Combined Results
 - **cellpose_dino/**: Cell instances labeled with semantic classes
 - **sam_dino/**: SAM3 predictions filtered by semantic constraints
+- **extract_regions/**: Original images and instance masks cropped to semantic regions, with Xylem vessels split into Hydrated and Dehydrated subsets
 
 ## Class Definitions
 
@@ -179,15 +201,18 @@ The pipeline segments the following anatomical classes:
 | 1 | Cortex | Blue |
 | 2 | Phloem Fibers | Green |
 | 3 | Phloem | Purple |
-| 4 | Xylem vessels | Red |
+| 4 | Hydrated Xylem vessels | Red |
 | 5 | Air-based Pith cells | Yellow |
 | 6 | Water-based Pith cells | Orange |
+| 7 | Dehydrated Xylem vessels | Pink |
+
+> **Note**: SAM3 prompts Hydrated and Dehydrated Xylem vessels as separate classes (IDs 4 and 7). DINO maps both to a single semantic class (ID 4). The `extract_region` step separates them by subtracting the dilated Dehydrated mask from the Hydrated prediction.
 
 ## Key Features
 
-### SAM3 Inference (`src/inference_v5.py`)
+### SAM3 Inference (`src/inference_v6.py`)
 - Multi-GPU distributed inference with image-level sharding
-- Patch-based processing with 25% overlap for large images
+- Patch-based processing with configurable overlap for large images
 - Max confidence stitching for overlap regions
 - Text-prompted segmentation for multiple classes
 - Batch processing with native SAM3 API
@@ -211,9 +236,13 @@ The pipeline segments the following anatomical classes:
 - Uses majority voting with 30% overlap threshold
 - Multi-core CPU processing for efficiency
 
-**SAM3 + DINO** (`src/combine_sam_dino.py`):
+**SAM3 + DINO** (`src/combine_sam_dino_v2.py`):
 - Filters SAM3 predictions using semantic mask guidance
 - Spatial constraint: only keeps predictions within semantic regions
 - Max confidence strategy for overlapping predictions
 - Reduces false positives from SAM3
 
+**Region Extraction** (`src/extract_region.py`):
+- Masks original images to a target semantic region (background set to black)
+- Filters instance masks to the same region
+- Xylem mode (`--xylem-mode all`): extracts combined, hydrated-only, and dehydrated-only subsets; uses dilated dehydrated mask subtraction to isolate hydrated vessels
