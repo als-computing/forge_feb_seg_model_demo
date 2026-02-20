@@ -10,6 +10,8 @@ Author: ALS Photon Science Computing
 
 import argparse
 import logging
+from concurrent.futures import ProcessPoolExecutor, as_completed  # ADDED
+from multiprocessing import cpu_count                              # ADDED
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -90,13 +92,9 @@ def filter_mask_by_semantic(
     Returns:
         Filtered mask with predictions only in semantic region
     """
-    # Get semantic class region
     semantic_region = semantic_mask == semantic_class_id
-    
-    # Keep only predictions within the semantic region
     filtered = prediction_mask.copy()
     filtered[~semantic_region] = 0
-    
     return filtered
 
 
@@ -115,15 +113,12 @@ def create_combined_mask_from_filtered(
     Returns:
         Combined mask with class IDs
     """
-    # Get image shape from first mask
     h, w = next(iter(filtered_masks.values())).shape
     combined = np.zeros((h, w), dtype=np.uint8)
     max_values = np.zeros((h, w), dtype=np.float32)
     
     for prompt, mask in filtered_masks.items():
         class_id = prompt_to_class_id[prompt]
-        
-        # Update where this mask has higher values
         update_mask = mask > max_values
         combined[update_mask] = class_id
         max_values[update_mask] = mask[update_mask]
@@ -151,7 +146,6 @@ def create_overlay(
     Returns:
         RGB overlay image
     """
-    # Load and normalize original image
     img = Image.open(original_image_path)
     
     if img.mode not in ["RGB", "L", "RGBA"]:
@@ -172,19 +166,15 @@ def create_overlay(
     img_array = np.array(img)
     h, w = combined_mask.shape
     
-    # Resize if needed
     if img_array.shape[:2] != (h, w):
         img = img.resize((w, h), Image.Resampling.BILINEAR)
         img_array = np.array(img)
     
-    # Create RGBA overlay
     overlay = np.zeros((h, w, 4), dtype=np.float32)
-    
-    # Invert the mapping to go from class_id -> prompt_name
     class_id_to_prompt = {v: k for k, v in prompt_to_class_id.items()}
     
     for class_id in np.unique(combined_mask):
-        if class_id == 0:  # Background
+        if class_id == 0:
             continue
         
         prompt = class_id_to_prompt.get(class_id)
@@ -199,7 +189,6 @@ def create_overlay(
         overlay[mask_region, 2] = color[2]
         overlay[mask_region, 3] = alpha
     
-    # Blend
     alpha_channel = overlay[:, :, 3:4]
     result = img_array * (1 - alpha_channel) + overlay[:, :, :3] * 255 * alpha_channel
     return result.astype(np.uint8)
@@ -218,19 +207,7 @@ def process_image(
 ) -> None:
     """
     Process a single image: filter masks, combine, and create overlay.
-    
-    Args:
-        image_stem: Image filename stem (without extension)
-        mask_dir: Directory containing prediction masks
-        semantic_dir: Directory containing semantic masks
-        input_dir: Directory containing original images
-        output_dir: Output directory
-        prompts: List of class names
-        prompt_to_semantic: Mapping of prompt to semantic class ID
-        class_colors: Color definitions
-        alpha: Overlay transparency
     """
-    # Load semantic mask
     semantic_path = semantic_dir / f"{image_stem}.tif"
     if not semantic_path.exists():
         semantic_path = semantic_dir / f"{image_stem}.tiff"
@@ -242,11 +219,9 @@ def process_image(
     semantic_mask = load_semantic_mask(semantic_path)
     h, w = semantic_mask.shape
     
-    # Load and filter each prompt's mask
     filtered_masks = {}
     
     for prompt in prompts:
-        # Find mask file
         prompt_dir = mask_dir / prompt
         mask_path = prompt_dir / f"{image_stem}_mask.tif"
         
@@ -258,53 +233,57 @@ def process_image(
             filtered_masks[prompt] = np.zeros((h, w), dtype=np.float32)
             continue
         
-        # Load prediction mask
         pred_mask = load_mask(mask_path)
         
-        # Resize if needed
         if pred_mask.shape != (h, w):
             pred_mask_img = Image.fromarray((pred_mask * 255).astype(np.uint8))
             pred_mask_img = pred_mask_img.resize((w, h), Image.Resampling.BILINEAR)
             pred_mask = np.array(pred_mask_img).astype(np.float32) / 255.0
         
-        # Filter using semantic mask
         semantic_class = prompt_to_semantic.get(prompt)
         if semantic_class is None:
             logger.warning(f"No semantic class mapping for {prompt}")
             filtered_masks[prompt] = pred_mask
             continue
         
-        filtered = filter_mask_by_semantic(
-            pred_mask,
-            semantic_mask,
-            semantic_class,
-        )
-        
+        filtered = filter_mask_by_semantic(pred_mask, semantic_mask, semantic_class)
         filtered_masks[prompt] = filtered
     
-    # Create combined mask
     prompt_to_class_id = {p: i + 1 for i, p in enumerate(prompts)}
     combined = create_combined_mask_from_filtered(filtered_masks, prompt_to_class_id)
     
-    # Create and save overlay directly to output_dir
-    # Find original image
     orig_path = input_dir / f"{image_stem}.tif"
     if not orig_path.exists():
         orig_path = input_dir / f"{image_stem}.tiff"
     
     if orig_path.exists():
-        overlay = create_overlay(
-            combined,
-            orig_path,
-            class_colors,
-            prompt_to_class_id,
-            alpha,
-        )
-        
+        overlay = create_overlay(combined, orig_path, class_colors, prompt_to_class_id, alpha)
         overlay_path = output_dir / f"{image_stem}_overlay.tif"
         Image.fromarray(overlay).save(overlay_path, compression="tiff_deflate")
     else:
         logger.warning(f"Original image not found: {orig_path}")
+
+
+# ADDED: wrapper function for multiprocessing
+def _process_image_wrapper(args):
+    """Wrapper to unpack args for ProcessPoolExecutor."""
+    image_stem, mask_dir, semantic_dir, input_dir, output_dir, prompts, prompt_to_semantic, class_colors, alpha = args
+    try:
+        process_image(
+            image_stem=image_stem,
+            mask_dir=mask_dir,
+            semantic_dir=semantic_dir,
+            input_dir=input_dir,
+            output_dir=output_dir,
+            prompts=prompts,
+            prompt_to_semantic=prompt_to_semantic,
+            class_colors=class_colors,
+            alpha=alpha,
+        )
+        return (True, image_stem)
+    except Exception as e:
+        logger.error(f"Error processing {image_stem}: {e}")
+        return (False, image_stem)
 
 
 # =============================================================================
@@ -346,6 +325,12 @@ def main():
         default=0.45,
         help="Overlay transparency (0=invisible, 1=opaque)",
     )
+    parser.add_argument(                                          # ADDED
+        "--num-workers",
+        type=int,
+        default=max(1, cpu_count() - 1),
+        help="Number of parallel worker processes",
+    )
     
     args = parser.parse_args()
     
@@ -356,8 +341,6 @@ def main():
     
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Auto-discover prompts from mask directory subdirectories
-    # Exclude output directories like 'combined', 'combined_overlay'
     exclude_dirs = {'combined', 'combined_overlay', 'filtered_combined', 'filtered_overlay'}
     prompts = []
     if mask_dir.exists():
@@ -365,7 +348,7 @@ def main():
             d.name for d in mask_dir.iterdir() 
             if d.is_dir() and not d.name.startswith('.') and d.name not in exclude_dirs
         ]
-        prompts = sorted(prompts)  # Consistent ordering
+        prompts = sorted(prompts)
     
     if not prompts:
         logger.error(f"No prompt subdirectories found in {mask_dir}")
@@ -380,9 +363,9 @@ def main():
     logger.info(f"  output dir: {output_dir}")
     logger.info(f"  discovered prompts: {prompts}")
     logger.info(f"  filtering mode: SPATIAL (keep only pixels in semantic region)")
+    logger.info(f"  num workers: {args.num_workers}")          # ADDED
     logger.info(f"{'='*70}")
     
-    # Find all images to process
     semantic_files = list(semantic_dir.glob("*.tif")) + list(semantic_dir.glob("*.tiff"))
     
     if not semantic_files:
@@ -391,25 +374,20 @@ def main():
     
     logger.info(f"Found {len(semantic_files)} semantic masks to process")
     
-    # Process each image
-    for semantic_path in tqdm(semantic_files, desc="Processing images"):
-        image_stem = semantic_path.stem
-        
-        try:
-            process_image(
-                image_stem=image_stem,
-                mask_dir=mask_dir,
-                semantic_dir=semantic_dir,
-                input_dir=input_dir,
-                output_dir=output_dir,
-                prompts=prompts,  # Use discovered prompts
-                prompt_to_semantic=PROMPT_TO_SEMANTIC_CLASS,
-                class_colors=CLASS_COLORS_RGB,
-                alpha=args.alpha,
-            )
-        except Exception as e:
-            logger.error(f"Error processing {image_stem}: {e}")
-            continue
+    # ADDED: build task list and run in parallel
+    tasks = [
+        (
+            semantic_path.stem,
+            mask_dir, semantic_dir, input_dir, output_dir,
+            prompts, PROMPT_TO_SEMANTIC_CLASS, CLASS_COLORS_RGB, args.alpha,
+        )
+        for semantic_path in semantic_files
+    ]
+
+    with ProcessPoolExecutor(max_workers=args.num_workers) as executor:
+        futures = {executor.submit(_process_image_wrapper, t): t[0] for t in tasks}
+        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing images"):
+            future.result()
     
     logger.info(f"{'='*70}")
     logger.info("Processing complete!")
