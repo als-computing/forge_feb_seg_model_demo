@@ -3,9 +3,9 @@ module load conda
 
 
 # Define base paths with timestamp
-INPUT_DIR="/pscratch/sd/x/xchong/sam3_finetune/seg_annotation_pipeline2/data4/images"
-RESULTS_BASE="./results/data4_7classes_envtest_$(date +%Y%m%d_%H%M%S)"
-#RESULTS_BASE="./results/data4_7classes_envtest_20260220_095240"
+INPUT_DIR="/pscratch/sd/x/xchong/sam3_finetune/forge_feb_seg_model_demo/sample_data/0220"
+RESULTS_BASE="./results/0220_7classes_envtest_$(date +%Y%m%d_%H%M%S)"
+#RESULTS_BASE="./results/0220_7classes_envtest_20260221_112623"
 SAM3_RESULTS="${RESULTS_BASE}/sam3"
 CELLPOSE_RESULTS="${RESULTS_BASE}/cellpose"
 DINO_RESULTS="${RESULTS_BASE}/dino"
@@ -34,15 +34,6 @@ torchrun --nproc_per_node=4 --nnodes=1 -m src.inference_v6 \
     --original-checkpoint "$SAM3_ORIGINAL_CHECKPOINT"
 
 conda activate dino_demo
-
-# Cellpose inference
-torchrun --nproc_per_node=4 --nnodes=1 -m src.inference_cellpose_v1 \
-    --input-dir "$INPUT_DIR" \
-    --output-dir "$CELLPOSE_RESULTS" \
-    --finetuned-checkpoint "$CELLPOSE_FINETUNED_CHECKPOINT" \
-    --save-overlay
-
-
 # DINO inference
 torchrun --nproc_per_node=4 --nnodes=1 -m src.inference_dino_v1 \
     --input-dir "$INPUT_DIR" \
@@ -50,37 +41,15 @@ torchrun --nproc_per_node=4 --nnodes=1 -m src.inference_dino_v1 \
     --finetuned-checkpoint "$DINO_FINETUNED_CHECKPOINT" \
     --save-overlay
 
-# Combine Cellpose + DINO
-python -m src.combine_cellpose_dino \
-    --input-dir "$INPUT_DIR" \
-    --instance-masks-dir "$CELLPOSE_RESULTS/instance_masks" \
-    --semantic-masks-dir "$DINO_RESULTS/semantic_masks" \
-    --output-dir "$COMBINED_OUTPUT/cellpose_dino"
-
-# Combine SAM + DINO
-python -m src.combine_sam_dino_v2 \
+conda activate dino_demo
+# Filter, Combine & Extract
+python -m src.combine_sam_dino_v3 \
     --input-dir "$INPUT_DIR" \
     --instance-masks-dir "$SAM3_RESULTS" \
     --semantic-masks-dir "$DINO_RESULTS/semantic_masks" \
-    --output-dir "$COMBINED_OUTPUT/sam_dino"
-
-# Extract Hydrated and Dehydrated Xylem regions
-python -m src.extract_region \
-    --input-dir "$INPUT_DIR" \
-    --semantic-masks-dir "$DINO_RESULTS/semantic_masks" \
-    --instance-masks-dir "$SAM3_RESULTS" \
-    --output-dir "$COMBINED_OUTPUT/extract_regions" \
-    --xylem-mode all \
-    --dilate-px 5      # increase if boundary ring still visible, decrease if too much erosion
+    --output-dir "$COMBINED_OUTPUT/sam_dino" \
+    --dilate-px 5 \
+    --save-extracted \
+    --dino-trust Cortex Phloem_Fibers Phloem Air-based_Pith_cells Water-based_Pith_cells
 
 
-# #run cellpose3d
-# torchrun --nproc_per_node=4 --nnodes=1 -m src.inference_cellpose_3d_v1 \
-#     "$COMBINED_OUTPUT/extract_regions/Hydrated_Xylem_vessels/images" \
-#     --output "$COMBINED_OUTPUT/extract_regions/Hydrated_Xylem_vessels/cellpose3d" \
-#     --do_3d
-
-# torchrun --nproc_per_node=4 --nnodes=1 -m src.inference_cellpose_3d_v1 \
-#     "$COMBINED_OUTPUT/extract_regions/Dehydrated_Xylem_vessels/images" \
-#     --output "$COMBINED_OUTPUT/extract_regions/Dehydrated_Xylem_vessels/cellpose3d" \
-#     --do_3d

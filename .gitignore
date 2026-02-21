@@ -7,6 +7,8 @@ checkpoints/**
 *.ipynb_checkpoints
 *.csv
 *.png
+submit_nersc_v6_reserved_step1.sh
+submit_nersc_v6_reserved_step2.sh
 
 
 # Byte-compiled / optimized / DLL files
