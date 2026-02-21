@@ -805,6 +805,7 @@ def process_and_save_one_image_single_rank(
     batch_size: int,
     device: torch.device,
     rank: int,
+    save_combined: bool,  # <-- new parameter
 ) -> float:
     """
     End-to-end processing for ONE IMAGE on ONE RANK:
@@ -852,25 +853,26 @@ def process_and_save_one_image_single_rank(
         prompt_dir = output_dir / prompt.replace(" ", "_")
         save_mask(stitched, prompt_dir / f"{image_stem}_mask.tif")
 
-    # Create combined mask using MAX CONFIDENCE across all classes
-    combined_path = output_dir / "combined" / f"{image_stem}_combined.tif"
-    save_combined_mask_max_confidence(
-        local_results, prompts, class_colors, orig_h, orig_w, patch_size, combined_path
-    )
+    if save_combined:
+        # Create combined mask using MAX CONFIDENCE across all classes
+        combined_path = output_dir / "combined" / f"{image_stem}_combined.tif"
+        save_combined_mask_max_confidence(
+            local_results, prompts, class_colors, orig_h, orig_w, patch_size, combined_path
+        )
 
-    # Save overlay
-    overlay_path = output_dir / "combined_overlay" / f"{image_stem}_overlay.tif"
-    save_overlay(
-        results=local_results,
-        prompts=prompts,
-        class_colors=class_colors,
-        orig_h=orig_h,
-        orig_w=orig_w,
-        patch_size=patch_size,
-        image_path=image_path,
-        output_path=overlay_path,
-        alpha=0.45,
-    )
+        # Save overlay
+        overlay_path = output_dir / "combined_overlay" / f"{image_stem}_overlay.tif"
+        save_overlay(
+            results=local_results,
+            prompts=prompts,
+            class_colors=class_colors,
+            orig_h=orig_h,
+            orig_w=orig_w,
+            patch_size=patch_size,
+            image_path=image_path,
+            output_path=overlay_path,
+            alpha=0.45,
+        )
 
     dt = time.time() - t0
     logger.info(f"[rank {rank}] ✓ Saved masks for {image_name} in {dt:.1f}s")
@@ -926,6 +928,12 @@ def main() -> None:
     )
 
     parser.add_argument("--skip-existing", action="store_true")
+    parser.add_argument(
+        "--save-combined",
+        action="store_true",
+        default=False,
+        help="If set, also compute and save the combined mask and overlay (slower).",
+    )
     args = parser.parse_args()
 
     # Distributed init (for rank/world_size and final metrics only)
@@ -974,6 +982,7 @@ def main() -> None:
         logger.info(f"  confidence thresholds: {confidence_thresholds}")
         logger.info(f"  patch_size: {args.patch_size} | overlap: {args.overlap_ratio*100:.0f}% | batch_size: {args.batch_size}")
         logger.info(f"  stitching: MAX CONFIDENCE (per-class + combined)")
+        logger.info(f"  save combined + overlay: {args.save_combined}")
         logger.info(f"{'='*70}")
 
     if not all_files:
@@ -1021,6 +1030,7 @@ def main() -> None:
             batch_size=args.batch_size,
             device=device,
             rank=rank,
+            save_combined=args.save_combined,  # <-- pass through
         )
         per_image_times.append(dt)
         processed_count += 1
