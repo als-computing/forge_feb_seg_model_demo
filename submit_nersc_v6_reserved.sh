@@ -120,7 +120,7 @@ echo "<<< STEP 1 DONE: $(($(date +%s) - STEP_START))s elapsed"
 echo ""
 echo ">>> STEP 3/5: DINO Inference [$(date)]"
 STEP_START=$(date +%s)
-
+conda activate dino_demo
 srun --ntasks-per-node=1 --gpus-per-task=4 bash -c "
 torchrun \
     --nnodes=\$SLURM_NNODES \

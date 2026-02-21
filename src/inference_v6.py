@@ -78,7 +78,7 @@ CLASS_COLORS_RGB = {
     "Hydrated Xylem vessels": (1.0, 0.0, 0.0),      # Red
     "Air-based Pith cells": (1.0, 1.0, 0.0),        # Yellow
     "Water-based Pith cells": (1.0, 165/255, 0.0),  # Orange
-    "Dehydrated Xylem vessels": (1.0, 102/255, 178/255),  # Pink
+    "Dehydrated Xylem vessels": (0.0, 199/255, 190/255),  # blue turquoise
 }
 
 
