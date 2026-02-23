@@ -7,7 +7,9 @@ checkpoints/**
 *.ipynb_checkpoints
 *.csv
 *.png
-*.txt
+submit_nersc_v6_reserved_step1.sh
+submit_nersc_v6_reserved_step2.sh
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -190,3 +192,5 @@ cython_debug/
 .vscode/
 .vscode-server/
 workspace/
+
+
