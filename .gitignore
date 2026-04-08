@@ -9,6 +9,7 @@ checkpoints/**
 *.png
 submit_nersc_v6_reserved_step1.sh
 submit_nersc_v6_reserved_step2.sh
+run_single_node_all_7classes_paper_test.sh
 
 
 # Byte-compiled / optimized / DLL files
