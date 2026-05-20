@@ -9,13 +9,13 @@ INPUT_DIR="/pscratch/sd/x/xchong/3RSE/832/leaf/Walnut leaves/images"
 RESULTS_BASE="./results/Walnut_leaves_envtest_$(date +%Y%m%d_%H%M%S)"
 DINO_RESULTS="${RESULTS_BASE}/dino"
 
-DINO_FINETUNED_CHECKPOINT="/pscratch/sd/x/xchong/3RSE/832/leaf/out_vitl16-eomt-cityscapes/leaf_experiment/checkpoints/best.ckpt"
+DINO_FINETUNED_CHECKPOINT="/pscratch/sd/x/xchong/3RSE/832/leaf_new/out_vitl16-eomt-cityscapes_5k/leaf_experiment/checkpoints/best.ckpt"
 
 
 
 conda activate dino_demo
 # DINO inference
-torchrun --nproc_per_node=4 --nnodes=1 -m src.inference_dino_v3 \
+CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 --nnodes=1 -m src.inference_dino_v4 \
     --input-dir "$INPUT_DIR" \
     --output-dir "$DINO_RESULTS" \
     --finetuned-checkpoint "$DINO_FINETUNED_CHECKPOINT" \
