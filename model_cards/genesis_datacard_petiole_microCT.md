@@ -191,28 +191,6 @@ datacard:
             ror_id: https://ror.org/02jbv0t02  # [if_applicable] Format: https://ror.org/XXXXXXX
                                                # Look up at https://ror.org
 
-        # TYPE: organization — use when a team or org created the datacard without a named individual
-        organization:
-          name: ${ORG_NAME}
-          ror_id: __ROR_ID__
-
-        # TYPE: ai_model — use when an AI model generated or substantially contributed to this datacard
-        ai_model:
-          name: ${MODEL_NAME}                  # e.g., Claude 3.5 Sonnet | GPT-4o | Llama 3
-          version: __VERSION__
-          date_accessed: "${YYYY-MM-DD}"
-          identifier:
-            type: __TYPE__                     # doi | ark | handle | url | local | other
-            value: __VALUE__                   # Link to model card or documentation if available
-
-        # TYPE: software — use when an automated pipeline or script generated this datacard
-        software:
-          name: ${SOFTWARE_NAME}
-          version: __VERSION__
-          identifier:
-            type: __TYPE__                     # doi | ark | handle | url | local | other
-            value: __VALUE__
-
 
 # ============================================================
 # LEVEL 1 — BASIC & DISCOVERABLE                   [REQUIRED]
@@ -268,7 +246,7 @@ identification:
 
 # --- Description ------------------------------------------------
 description:
-  summary: "This dataset contains 42 high-resolution grapevine petiole micro-CT scans with semantic masks, instance masks, and COCO-format annotations for training and evaluating foundation models for image segmentation. It also includes two unannotated time-series micro-CT datasets collected during dehydration experiments for model inference and temporal analysis."      # [core] 1–3 sentence plain-language description of the dataset.
+  summary: "This dataset contains 42 high-resolution grapevine petiole micro-CT scans with semantic masks, instance masks, and COCO-format annotations for training and evaluating foundation models for image segmentation. It also includes two unannotated time-series micro-CT datasets (14 scans) collected during dehydration experiments for model inference and temporal analysis."      # [core] 1–3 sentence plain-language description of the dataset.
                                                # Write for a broad scientific audience unfamiliar with your project.
   purpose: The dataset was created to support the development, training, and benchmarking of foundation models for semantic and instance segmentation of plant anatomical structures in synchrotron micro-CT data. It provides a standardized, annotated resource for studying plant vascular systems and evaluating AI-driven image analysis workflows.                       # [if_applicable] Why was this dataset created? What gap does it fill?
   collection_methodology: human annotation and AI enabled annotaiton     # [if_applicable] How was data acquired?
@@ -333,7 +311,7 @@ workflow:
   pipeline_stage: Final annotated dataset for training, evaluation, and benchmarking of segmentation foundation models.   # [if_applicable] Freetext position in processing pipeline.
                                               # e.g., "post-detector, pre-reconstruction"
                                               # e.g., "raw telemetry, pre-calibration"
-  embargo_until: 2026-06-24                   # [if_applicable] Required if state=embargo.
+  embargo_until: __YYYY-MM-DD__                   # [if_applicable] Required if state=embargo.
                                               # ISO 8601 date after which release is permitted.
 
 # --- Dataset Readiness ------------------------------------------
@@ -350,14 +328,6 @@ dataset_readiness:
   evaluated_by:                               # [if_applicable] Person or organization that performed the evaluation.
                                               # Delete the block that does not apply.
     type: organization                        # person | organization
-    person:
-      given_name: __GIVEN_NAME__             # [if_applicable]
-      family_name: __FAMILY_NAME__           # [if_applicable]
-      orcid: __ORCID__                       # [if_applicable]
-      email: __EMAIL__                       # [if_applicable]
-      affiliation:
-        name: __ORG_NAME__                   # [if_applicable]
-        ror_id: __ROR_ID__                   # [if_applicable]
     organization:
       name: Lawrence Berkley National Laboratory                     # [if_applicable]
       ror_id: https://ror.org/02jbv0t02                              # [if_applicable]
@@ -488,7 +458,7 @@ contact:                                     # [core] Primary point of contact f
   organization:                              # Use if no single named contact (e.g., a data management office)
     name: Lawrence Berkeley National Laboratory
     ror_id: https://ror.org/02jbv0t02
-  valid_until: 2026-06-24                    # [if_applicable] Date after which this contact may no longer be valid.
+  valid_until: __YYYY-MM-DD__                   # [if_applicable] Date after which this contact may no longer be valid.
                                              # Use for project-bound contacts (students, postdocs, term staff).
   succession_note: Contact the LBNL ALS Computing Group at xchong@lbl.gov.                 # [if_applicable] Who to contact if this contact is no longer reachable.
                                              # e.g., "Contact the ORNL data management office at data@ornl.gov"
@@ -662,7 +632,7 @@ access:
         endpoint: https://zenodo.org/api/records/19476729
         documentation_url: https://developers.zenodo.org/
         authentication: none           # none | api_key | oauth2 | certificate | other
-        version: __VERSION__
+        version: Version v1
         rate_limit: __LIMIT__              # e.g., "1000 requests/hour"
 
 # --- Provenance -------------------------------------------------
@@ -737,11 +707,6 @@ reviews:
       ror_id: https://ror.org/02jbv0t02                   # [if_applicable]
     reviewed_by:                           # [if_applicable] Delete the block that does not apply.
       type: organization                       # person | organization
-      person:
-        given_name: __GIVEN_NAME__         # [if_applicable]
-        family_name: __FAMILY_NAME__       # [if_applicable]
-        email: __EMAIL__                   # [if_applicable]
-        ror_id: __ROR_ID__                 # [if_applicable]
       organization:
         name: Lawrence Berkeley National Laboratory                 # [if_applicable]
         ror_id: https://ror.org/02jbv0t02                 # [if_applicable]
@@ -823,7 +788,7 @@ citation:
       year      = {2026},
       publisher = {Zenodo},
       doi       = {10.5281/zenodo.19476729},
-      url       = {[${URL}](https://doi.org/10.5281/zenodo.19476729)}
+      url       = {https://doi.org/10.5281/zenodo.19476729}
     }
 
 
