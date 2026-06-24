@@ -2,10 +2,10 @@
 language:
 - en # ISO language tag
 tags:
-- project:genesis # include on all GENESIS project models
-- project:model_team_name # include your _short_ model team name e.g. MOAT
-- type:model # use other types include {agent, eval, framework, model, etc...}
-- science:lightsource # what kind of science is this for (e.g., materials, biology, lightsource, fusion, climate, etc.)
+- project: genesis # include on all GENESIS project models
+- project: SYNAPS-I # include your _short_ model team name e.g. MOAT
+- type: model # use other types include {agent, eval, framework, model, etc...}
+- science: imaging # what kind of science is this for (e.g., materials, biology, lightsource, fusion, climate, etc.)
 - risk:general # indicates level of risk review {general, reviewed, restricted}
 license: {spdx_license_id} # use an SPDX license identifier https://spdx.org/licenses/
 license_name: {license_name}  # If license = other (license not in https://hf.co/docs/hub/repositories-licenses), specify an id for it here, like `my-license-1.0`. if not delete this line
@@ -20,7 +20,7 @@ metrics:
 
 ---
 
-# DINOv3-Seg
+# DINOv3-Seg for Petiole Segmentation
 
 DINOv3-Seg is a semantic segmentation model for grapevine petiole micro-CT images. The model combines the pretrained Meta DINOv3 vision foundation model with an EOMT segmentation head to perform dense pixel-wise prediction of cellular structures. It was fine-tuned on a manually annotated petiole micro-CT dataset containing six cell classes and is designed for automated semantic segmentation of plant cells in high-resolution synchrotron micro-CT data.
 

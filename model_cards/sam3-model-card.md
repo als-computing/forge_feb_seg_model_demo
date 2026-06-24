@@ -2,11 +2,11 @@
 language:
 - en # ISO language tag
 tags:
-- project:genesis # include on all GENESIS project models
-- project:model_team_name # include your _short_ model team name e.g. MOAT
-- type:model # use other types include {agent, eval, framework, model, etc...}
-- science:lightsource # what kind of science is this for (e.g., materials, biology, lightsource, fusion, climate, etc.)
-- risk:general # indicates level of risk review {general, reviewed, restricted}
+- project: genesis # include on all GENESIS project models
+- project: SYNAPS-I # include your _short_ model team name e.g. MOAT
+- type: model # use other types include {agent, eval, framework, model, etc...}
+- science: imaging # what kind of science is this for (e.g., materials, biology, lightsource, fusion, climate, etc.)
+- risk: general # indicates level of risk review {general, reviewed, restricted}
 license: {spdx_license_id} # use an SPDX license identifier https://spdx.org/licenses/
 license_name: {license_name}  # If license = other (license not in https://hf.co/docs/hub/repositories-licenses), specify an id for it here, like `my-license-1.0`. if not delete this line
 license_link: {license_link}  # If license = other, specify "LICENSE" or "LICENSE.md" to link to a file of that name inside the repo, or a URL to a remote file. if not delete this line
@@ -30,7 +30,7 @@ metrics:
   - AR_large
 ---
 
-# SAM3
+# SAM3 for Petiole Segmentation
 
 This model is based on Meta AI's Segment Anything Model 3 (SAM3) and has been fine-tuned on a petiole micro-CT dataset acquired at the Advanced Light Source (ALS). It is designed for instance segmentation of anatomical structures in high-resolution synchrotron micro-CT images.
 
