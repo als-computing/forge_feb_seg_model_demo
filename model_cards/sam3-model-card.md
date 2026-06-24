@@ -7,9 +7,9 @@ tags:
 - type: model # use other types include {agent, eval, framework, model, etc...}
 - science: imaging # what kind of science is this for (e.g., materials, biology, lightsource, fusion, climate, etc.)
 - risk: general # indicates level of risk review {general, reviewed, restricted}
-license: {spdx_license_id} # use an SPDX license identifier https://spdx.org/licenses/
-license_name: {license_name}  # If license = other (license not in https://hf.co/docs/hub/repositories-licenses), specify an id for it here, like `my-license-1.0`. if not delete this line
-license_link: {license_link}  # If license = other, specify "LICENSE" or "LICENSE.md" to link to a file of that name inside the repo, or a URL to a remote file. if not delete this line
+license: other # use an SPDX license identifier https://spdx.org/licenses/
+license_name: SAM License  # If license = other (license not in https://hf.co/docs/hub/repositories-licenses), specify an id for it here, like `my-license-1.0`. if not delete this line
+license_link: https://github.com/facebookresearch/sam3/blob/main/LICENSE  # If license = other, specify "LICENSE" or "LICENSE.md" to link to a file of that name inside the repo, or a URL to a remote file. if not delete this line
 base_model: SAM3 # if fine tuning, include the basemodel url here
 new_version:  # if this model has been superseeded by a new version, omit for now
 datasets:
