@@ -38,7 +38,7 @@ This model is based on Meta AI's Segment Anything Model 3 (SAM3) and has been fi
 
 ## Developed by
 
-Xiaoya Chong, ...
+Xiaoya Chong, Pradyumna Elavarthi, Tanny Chavez, Petrus Zwart, Alexander Hexemer
 
 ## Contributed by  
 
@@ -101,6 +101,7 @@ The pyproject.toml file can be found at: https://github.com/als-computing/forge_
 
 ## Papers and Scientific Outputs 
 
+```bibtex
 @unpublished{ChongEtAl2026_AIDrivenScanDiscovery,
   author    = {Chong, Xiaoya and Abramov, David and Elavarthi, Pradyumna and Clark, Elizabeth G. and Zwart, Petrus and Koepp, Wiebke and Parkinson, Dilworth Y. and McReynolds, Dylan and Bilieux, Hassina and Allan, Daniel and Yan, Hanfei and Weker, Johanna Nelson and Cherukara, Mathew Joseph and Mehta, Apurva and Schwarz, Nicholas and McElrone, Andrew and Chavez, Tanny and Hexemer, Alexander},
   date      = {2026},
@@ -108,6 +109,7 @@ The pyproject.toml file can be found at: https://github.com/als-computing/forge_
   note      = {Under review at Nature Communications},
   keywords  = {submitted},
 }
+```
 
 ## Model License
 
@@ -116,7 +118,6 @@ The model is currently not open source.
 ## Contact Info and Model Card Authors
 
 Correspondence and requests for materials should be addressed to Tanny Chavez (tanchavez@lbl.gov) or Alexander Hexemer (ahexemer@lbl.gov).
-
 
 # Intended Uses 
 
@@ -260,7 +261,7 @@ Dataset DOI: https://doi.org/10.5281/zenodo.19476729
 
 A 20% hold-out subset of the dataset was reserved for model evaluation and was not used during training. The dataset consists of high-resolution synchrotron micro-CT images of grapevine petioles acquired at Beamline 8.3.2 of the Advanced Light Source (ALS), with annotations spanning seven cell classes.
 
-## Evaluation Procedure 
+## Evaluation Procedure
 
 The model was evaluated on a held-out 20% subset of the grapevine petiole micro-CT dataset. Evaluation focused on **concept-guided instance segmentation**, where the model receives an image patch and a text prompt (e.g., *"xylem vessels"*) and predicts instance masks for the specified concept.
 
