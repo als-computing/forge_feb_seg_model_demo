@@ -226,30 +226,12 @@ identification:
     - type: url                          # doi | ark | handle | url | osti | sand | la-ur | local | other
       value: https://zenodo.org/records/19476729                        # e.g., SAND2024-XXXXX | LAUR-XX-XXXXX
 
-  supersedes:                                 # [if_applicable] Identifier of the prior version this dataset replaces.
-                                               # See stewardship.versioning_strategy for how versions are managed.
-    type: __TYPE__                            # doi | ark | handle | url | local | other
-    value: __VALUE__
-
-  superseded_by:                              # [if_applicable] Identifier of the newer version that replaces this dataset.
-                                               # Populate when this version is deprecated.
-    type: __TYPE__                            # doi | ark | handle | url | local | other
-    value: __VALUE__
-
-  parent_collection:                          # [if_applicable] Parent collection or experimental campaign this
-                                               # dataset belongs to. Use when this dataset is one of many in a
-                                               # larger organized collection or ensemble.
-    name: __NAME__
-    identifier:
-      type: __TYPE__                          # doi | ark | handle | url | local | other
-      value: __VALUE__
-
 # --- Description ------------------------------------------------
 description:
   summary: "This dataset contains 42 high-resolution grapevine petiole micro-CT scans with semantic masks, instance masks, and COCO-format annotations for training and evaluating foundation models for image segmentation. It also includes two unannotated time-series micro-CT datasets (14 scans) collected during dehydration experiments for model inference and temporal analysis."      # [core] 1–3 sentence plain-language description of the dataset.
                                                # Write for a broad scientific audience unfamiliar with your project.
   purpose: The dataset was created to support the development, training, and benchmarking of foundation models for semantic and instance segmentation of plant anatomical structures in synchrotron micro-CT data. It provides a standardized, annotated resource for studying plant vascular systems and evaluating AI-driven image analysis workflows.                       # [if_applicable] Why was this dataset created? What gap does it fill?
-  collection_methodology: human annotation and AI enabled annotaiton     # [if_applicable] How was data acquired?
+  collection_methodology: synchrotron micro-CT experiment, human annotation and AI-enabled annotation     # [if_applicable] How was data acquired?
                                                # e.g., experimental sensors | computational simulation |
                                                #        human annotation | derived from prior datasets
   data_characteristics: The dataset consists of 42 annotated 2D grayscale micro-CT TIFF images with a resolution of 2560 × 2560 pixels. The dataset also includes two unannotated time-series micro-CT datasets (14 scans) for inference.  # [if_applicable] Key structural and content characteristics:
@@ -258,7 +240,7 @@ description:
                                                # e.g., ML training | physics analysis | benchmarking | visualization
   current_use: The dataset is currently used to train and evaluate SAM3 and DINOv3-based segmentation models for automated analysis of grapevine petiole micro-CT images.               # [if_applicable] For in-workflow data: what is this dataset actively
                                                # being used for right now? Distinct from intended_use.
-  out_of_scope_use: This dataset should not be used for applications involving non-micro-CT imaging modalities without additional validation.         # [if_applicable] Uses this dataset should NOT be applied to.
+  out_of_scope_use: This dataset should not be used for applications involving non-micro-CT imaging modalities, non-plant specimens, or plant structures substantially different from petioles without additional validation.         # [if_applicable] Uses this dataset should NOT be applied to.
                                                # e.g., clinical decision-making | real-time control systems
   limitations: The dataset is limited to grapevine petiole samples acquired at a single synchrotron beamline and may not fully represent other plant species, tissues, imaging conditions, or acquisition protocols. The annotated dataset contains a finite number of cell classes and may not capture all anatomical variability present in plant tissues.               # [if_applicable] Known limitations, gaps, or caveats users should
                                                # be aware of before using this dataset.
@@ -311,8 +293,6 @@ workflow:
   pipeline_stage: Final annotated dataset for training, evaluation, and benchmarking of segmentation foundation models.   # [if_applicable] Freetext position in processing pipeline.
                                               # e.g., "post-detector, pre-reconstruction"
                                               # e.g., "raw telemetry, pre-calibration"
-  embargo_until: __YYYY-MM-DD__                   # [if_applicable] Required if state=embargo.
-                                              # ISO 8601 date after which release is permitted.
 
 # --- Dataset Readiness ------------------------------------------
 # Readiness describes usability — not scientific quality or value.
@@ -327,9 +307,9 @@ dataset_readiness:
   evaluated_at: 2026-02-24                    # [if_applicable] ISO 8601 date the evaluation was performed
   evaluated_by:                               # [if_applicable] Person or organization that performed the evaluation.
                                               # Delete the block that does not apply.
-    type: organization                        # person | organization
+    type: person                              # person | organization
     organization:
-      name: Lawrence Berkley National Laboratory                     # [if_applicable]
+      name: Lawrence Berkeley National Laboratory                     # [if_applicable]
       ror_id: https://ror.org/02jbv0t02                              # [if_applicable]
   confidence: high                           # [if_applicable] high | medium | low
 
@@ -367,38 +347,15 @@ security:
   sensitivity_level: public                   # [if_applicable] Human-readable quick filter for catalog use.
                                               # public | internal | confidential | restricted
                                               # Use alongside sensitivity_tier; does not replace it.
-  cui_marking: __MARKING__                   # [required if classification=CUI] Specific CUI marking.
-                                              # e.g., CUI | CUI//SP-PRVCY (PII) | CUI//SP-PROPIN (Proprietary)
-                                              #        CUI//SP-EXPT (Export Controlled)
-                                              # See https://www.archives.gov/cui for full registry.
   distribution_statement: Approved for public release; distribution is unlimited.           # [extended] Distribution limitation statement.
                                               # e.g., "Distribution A - Approved for public release; distribution is unlimited."
                                               # e.g., "Distribution D - Distribution authorized to DoD and DoD contractors only."
-  handling_instructions: __INSTR__           # [if_applicable] Special handling beyond the distribution statement.
-                                              # e.g., "No foreign dissemination" | "Export-controlled handling required"
   export_control: none                        # [core] Export control jurisdiction: none | EAR | ITAR
-  export_control_id: __ID__                  # [required if export_control != none] Classification number.
-                                              # e.g., EAR99 | ECCN 3E001 | USML Category XV
   data_rights: Publicly released research dataset.    # [if_applicable] Legal rights statement, separate from license.
                                               # e.g., "Government has unlimited rights"
                                               # e.g., "Contractor retains rights with government license"
   last_reviewed_date: 2026-06-24              # [if_applicable] Date security markings were last reviewed and
                                               # confirmed current. Update whenever markings are revalidated.
-  pii:                                        # [sensitive] Complete this block if sensitivity_tier=tier5_regulated_personal
-    present: false                         # [sensitive] true | false
-    types: []                                 # [required if present=true] PII types present:
-                                              # names | email_addresses | phone_numbers | location_data |
-                                              # biometric_data | financial_data | health_data | other
-    deidentification_applied: __BOOL__        # [if_applicable] true | false
-    deidentification_method: __METHOD__       # [required if deidentification_applied=true]
-                                              # e.g., "k-anonymity (k=5)" | "differential privacy (ε=1.0)" |
-                                              #        "direct identifier removal per HIPAA Safe Harbor"
-    deidentification_reviewed: __BOOL__       # [if_applicable] true | false — was the method formally reviewed?
-  classification_reason: __REASON__          # [required if classification != U]
-                                              # e.g., "Contains export-controlled simulation parameters"
-  declassification:
-    review_date: __YYYY-MM-DD__              # [required if classification != U]
-    authority: __AUTHORITY__                 # [required if classification != U]
 
 # --- Access Policy ----------------------------------------------
 # Describes who can access this dataset and under what conditions.
@@ -424,8 +381,7 @@ access_policy:
                                               #   export_control_review — export control review required
                                               #   irb_approval          — IRB approval required
                                               #   other                 — describe in access_restrictions
-  policy_url: https://doi.org/10.5281/zenodo.19476729                        # [if_applicable] URL to the full access policy document
-  policy_text: __TEXT__                      # [if_applicable] Inline summary if no policy_url exists
+  policy_url: https://about.zenodo.org/policies/                        # [if_applicable] URL to the full access policy document
 
 # --- License ----------------------------------------------------
 # [pub] Required when release_status = approved | published.
@@ -434,36 +390,32 @@ license:
   spdx_id: CC-BY-4.0                         # [pub] SPDX license identifier: https://spdx.org/licenses/
                                              # e.g., CC-BY-4.0 | CC0-1.0 | Apache-2.0 | MIT
                                              # Use "other" if not in SPDX registry. Use "pending" if not yet assigned.
-  name: __LICENSE_NAME__                     # [required if spdx_id=other]
   url: https://creativecommons.org/licenses/by/4.0/        # [if_applicable] URL to license text or "LICENSE.md" for repo-local file
-
-additional_licenses: []                      # [if_applicable] For multi-licensed datasets (e.g., data under CC-BY,
-                                             # code under Apache-2.0). Same structure as license above:
-                                             # - spdx_id: __SPDX_ID__
-                                             #   name: __LICENSE_NAME__
-                                             #   url: __LICENSE_URL__
 
 # --- Contacts ---------------------------------------------------
 contact:                                     # [core] Primary point of contact for questions about this dataset.
                                              # Required for all profiles — every dataset must have a reachable contact.
-  type: organization                         # person | organization
+  type: person                               # person | organization
   person:
-    given_name: ${GIVEN_NAME}
-    family_name: ${FAMILY_NAME}
-    orcid: __ORCID__                         # [if_applicable] Format: 0000-0000-0000-0000
-    email: ${EMAIL}
+    given_name: Alexander
+    family_name: Hexemer
+    orcid: 0000-0002-5269-0125               # [if_applicable] Format: 0000-0000-0000-0000
+    email: ahexemer@lbl.gov
     affiliation:
-      name: ${ORG_NAME}
-      ror_id: __ROR_ID__                     # [if_applicable] Format: https://ror.org/XXXXXXX
-  organization:                              # Use if no single named contact (e.g., a data management office)
-    name: Lawrence Berkeley National Laboratory
-    ror_id: https://ror.org/02jbv0t02
-  valid_until: __YYYY-MM-DD__                   # [if_applicable] Date after which this contact may no longer be valid.
-                                             # Use for project-bound contacts (students, postdocs, term staff).
-  succession_note: Contact the LBNL ALS Computing Group at xchong@lbl.gov.                 # [if_applicable] Who to contact if this contact is no longer reachable.
-                                             # e.g., "Contact the ORNL data management office at data@ornl.gov"
+      name: Lawrence Berkeley National Laboratory
+      ror_id: https://ror.org/02jbv0t02      # [if_applicable] Format: https://ror.org/XXXXXXX
 
-additional_contacts: []                      # [if_applicable] Additional contacts (e.g., instrument PI, data steward).
+additional_contacts: [
+  type: person                               # person | organization
+  person:
+    given_name: Petrus
+    family_name: Zwart
+    orcid: 0000-0003-3315-4092
+    email: phzwart@lbl.gov
+    affiliation:
+      name: Lawrence Berkeley National Laboratory
+      ror_id: https://ror.org/02jbv0t02
+]                                            # [if_applicable] Additional contacts (e.g., instrument PI, data steward).
                                              # Same structure as contact above:
                                              # - type: person | organization
                                              #   person:
@@ -481,21 +433,170 @@ additional_contacts: []                      # [if_applicable] Additional contac
 # [pub] At least one author required when release_status = approved | published.
 # For draft or in-workflow data, populate with known contributors.
 authors:
-  - type: organization                            # person | organization
+  - type: person                             # person | organization
     person:
-      given_name: ${GIVEN_NAME}
-      family_name: ${FAMILY_NAME}
-      orcid: __ORCID__                       # [if_applicable] Strongly recommended — enables disambiguation and credit tracking
-      email: __EMAIL__                       # [if_applicable]
+      given_name: Pradyumna
+      family_name: Elavarthi
+      orcid: __ORCID__
+      email: pelavarthi@lbl.gov
       affiliation:
-        name: ${ORG_NAME}
-        ror_id: __ROR_ID__                   # [if_applicable]
-    organization:
-      name: Lawrence Berkeley National Laboratory
-      ror_id: https://ror.org/02jbv0t02
+        name: Lawrence Berkeley National Laboratory
+        ror_id: https://ror.org/02jbv0t02
     role: creator                            # creator | contributor | data_collector | curator | publisher | sponsor | other
 
-contributors: [Andrew McElrone]                             # [if_applicable] Supporting contributors who are not primary authors.
+  - type: person                             # person | organization
+    person:
+      given_name: Xiaoya
+      family_name: Chong
+      orcid: 0000-0003-1495-8925
+      email: xchong@lbl.gov
+      affiliation:
+        name: Lawrence Berkeley National Laboratory
+        ror_id: https://ror.org/02jbv0t02
+    role: creator                            # creator | contributor | data_collector | curator | publisher | sponsor | other
+
+  - type: person                             # person | organization
+    person:
+      given_name: David
+      family_name: Abramov
+      orcid: 0000-0003-0356-3637
+      email: dabramov@lbl.gov
+      affiliation:
+        name: Lawrence Berkeley National Laboratory
+        ror_id: https://ror.org/02jbv0t02
+    role: creator                            # creator | contributor | data_collector | curator | publisher | sponsor | other
+
+  - type: person                             # person | organization
+    person:
+      given_name: Elizabeth
+      family_name: Clark
+      orcid: 0000-0003-4289-6370
+      email: elizabethclark@lbl.gov
+      affiliation:
+        name: Lawrence Berkeley National Laboratory
+        ror_id: https://ror.org/02jbv0t02
+    role: creator                            # creator | contributor | data_collector | curator | publisher | sponsor | other
+
+  - type: person                             # person | organization
+    person:
+      given_name: Wiebke
+      family_name: Koepp
+      orcid: 0000-0002-3234-9368
+      email: wkoepp@lbl.gov
+      affiliation:
+        name: Lawrence Berkeley National Laboratory
+        ror_id: https://ror.org/02jbv0t02
+    role: creator                            # creator | contributor | data_collector | curator | publisher | sponsor | other
+
+  - type: person                             # person | organization
+    person:
+      given_name: Dylan
+      family_name: McReynolds
+      orcid: 0000-0002-1539-0297
+      email: dmcreynolds@lbl.gov
+      affiliation:
+        name: Lawrence Berkeley National Laboratory
+        ror_id: https://ror.org/02jbv0t02
+    role: creator                            # creator | contributor | data_collector | curator | publisher | sponsor | other
+
+  - type: person                             # person | organization
+    person:
+      given_name: Dilworth
+      family_name: Parkinson
+      orcid: 0000-0002-1817-0716
+      email: dyparkinson@lbl.gov
+      affiliation:
+        name: Lawrence Berkeley National Laboratory
+        ror_id: https://ror.org/02jbv0t02
+    role: creator                            # creator | contributor | data_collector | curator | publisher | sponsor | other
+
+  - type: person                             # person | organization
+    person:
+      given_name: Abby
+      family_name: Hammermeister
+      orcid: 0000-0002-3334-2942
+      affiliation:
+        name: University of California, Davis
+        ror_id: https://ror.org/05rrcem69
+    role: data_collector                     # creator | contributor | data_collector | curator | publisher | sponsor | other
+
+  - type: person                             # person | organization
+    person:
+      given_name: Caetano
+      family_name: Albuquerque
+      orcid: 0000-0001-6222-3996
+      email: cpalbuquerque@ucdavis.edu
+      affiliation:
+        name: California State University, Monterey Bay
+        ror_id: https://ror.org/00mjdtw98
+    role: data_collector                     # creator | contributor | data_collector | curator | publisher | sponsor | other
+
+  - type: person                             # person | organization
+    person:
+      given_name: Andrew
+      family_name: McElrone
+      orcid: 0000-0001-9466-4761
+      email: ajmcelrone@ucdavis.edu
+      affiliation:
+        name: University of California, Davis; USDA-ARS, Davis
+        ror_id: https://ror.org/05rrcem69
+    role: contributor                        # creator | contributor | data_collector | curator | publisher | sponsor | other
+
+  - type: person                             # person | organization
+    person:
+      given_name: Tanny
+      family_name: Chavez
+      orcid: 0000-0001-9317-2896
+      email: tanchavez@lbl.gov
+      affiliation:
+        name: Lawrence Berkeley National Laboratory
+        ror_id: https://ror.org/02jbv0t02
+    role: creator                            # creator | contributor | data_collector | curator | publisher | sponsor | other
+
+  - type: person                             # person | organization
+    person:
+      given_name: Alexander
+      family_name: Hexemer
+      orcid: 0000-0002-5269-0125
+      email: ahexemer@lbl.gov
+      affiliation:
+        name: Lawrence Berkeley National Laboratory
+        ror_id: https://ror.org/02jbv0t02
+    role: creator                            # creator | contributor | data_collector | curator | publisher | sponsor | other
+  
+  - type: person                               # person | organization
+    person:
+      given_name: Petrus
+      family_name: Zwart
+      orcid: 0000-0003-3315-4092
+      email: phzwart@lbl.gov
+      affiliation:
+        name: Lawrence Berkeley National Laboratory
+        ror_id: https://ror.org/02jbv0t02
+    role: creator                            # creator | contributor | data_collector | curator | publisher | sponsor | other
+
+contributors: [
+  - type: person                               # person | organization
+    person:
+      given_name: Shashank
+      family_name: Subramanian
+      orcid: 0000-0001-7191-2953
+      email: shashanksubramanian@lbl.gov
+      affiliation:
+        name: Lawrence Berkeley National Laboratory
+        ror_id: https://ror.org/02jbv0t02
+    role: creator                            # creator | contributor | data_collector | curator | publisher | sponsor | other
+  - type: person                               # person | organization
+    person:
+      given_name: Wahid
+      family_name: Bhimji
+      orcid: 0000-0002-6213-8617
+      email: wbhimji@lbl.gov
+      affiliation:
+        name: Lawrence Berkeley National Laboratory
+        ror_id: https://ror.org/02jbv0t02
+    role: creator                            # creator | contributor | data_collector | curator | publisher | sponsor | other
+]              # [if_applicable] Supporting contributors who are not primary authors.
                                              # e.g., sample preparers, annotators, reviewers, submitters.
                                              # Same structure as authors above.
 
@@ -507,11 +608,24 @@ sponsor_organizations:                       # [core] Organizations that funded 
     program: The Transformational AI Models Consortium     # [if_applicable] e.g., "Advanced Scientific Computing Research"
 
 research_organizations:                      # [core] Organizations that created or collected the data.
-  - name: Lawrence Berkeley National Laboratory                        # e.g., Oak Ridge National Laboratory | Sandia National Laboratories
+  - name: Lawrence Berkeley National Laboratory            # e.g., Oak Ridge National Laboratory | Sandia National Laboratories
     ror_id: https://ror.org/02jbv0t02                      # [if_applicable]
 
-facilities: []                               # [if_applicable] User facilities, HPC centers, or research infrastructure
-                                             # used to collect, process, or store the dataset.
+facilities: [
+  - name: National Energy Research Scientific Computing Center (NERSC)               # e.g., Spallation Neutron Source | Summit | Frontier
+    ror_id: https://ror.org/05v3mvq14
+    role: processing                                            # collection | processing | storage | access
+    location:                                                   # [if_applicable] Point location for facility-based experimental data.
+      description: Lawrence Berkeley National Laboratory        # e.g., "SNS Beamline 1B, Oak Ridge National Laboratory, TN, USA"
+      ror_id: https://ror.org/02jbv0t02                         # ROR ID of the facility; cross-reference with name above
+  - name: Advanced Light Source                                 # e.g., Spallation Neutron Source | Summit | Frontier
+    ror_id: https://ror.org/00319zh75
+    role: collection                      # collection | processing | storage | access
+    location:                             # [if_applicable] Point location for facility-based experimental data.
+      description: Beamline 8.3.2, Lawrence Berkeley National Laboratory               # e.g., "SNS Beamline 1B, Oak Ridge National Laboratory, TN, USA"
+      ror_id: https://ror.org/02jbv0t02                         # ROR ID of the facility; cross-reference with name above
+]                               # [if_applicable] User facilities, HPC centers, or research infrastructure
+                                # used to collect, process, or store the dataset.
   # - name: National Energy Research Scientific Computing Center (NERSC)               # e.g., Spallation Neutron Source | Summit | Frontier
   #   ror_id: https://ror.org/05v3mvq14
   #   role: processing                        # collection | processing | storage | access
@@ -545,57 +659,25 @@ categorization:
 dataset_info:
   formats: [TIFF, JSON]                      # [core] File formats in this dataset.
                                              # e.g., ["CSV", "HDF5", "NetCDF4", "Parquet", "TIFF", "JSON"]
-  encoding: UTF-8                    # [if_applicable] Character encoding for text-based formats.
+  encoding: UTF-8                            # [if_applicable] Character encoding for text-based formats.
                                              # e.g., UTF-8 | ASCII | Latin-1
                                              # UTF-8 strongly recommended. Use not_applicable for binary formats.
-  schema_version: __VERSION__               # [if_applicable] Version of the data schema used in this dataset.
-                                             # Distinct from datacard_version. Increment when field names,
-                                             # types, or structure change between dataset versions.
-  modalities: [image, time-series]                            # [if_applicable] Data modalities present.
+  modalities: [image, time-series]           # [if_applicable] Data modalities present.
                                              # e.g., ["tabular", "image", "time-series", "text", "graph", "point-cloud"]
-  features: []                              # [if_applicable] Primary variables, fields, or features.
-                                             # IMPORTANT: choose ONE form and use it consistently — do not mix.
-                                             #
-                                             # For core | extended profiles — flat string list:
-                                             # e.g., ["temperature", "pressure", "timestamp", "label"]
-                                             #
-                                             # For ai_ready profile — structured form (replace flat list above):
-                                             # - name: temperature
-                                             #   type: float           # float | int | string | boolean | datetime | other
-                                             #   unit: Kelvin
-                                             #   description: Sample temperature at time of measurement
-                                             #   range: "273.15 - 373.15"
-  splits: ["train", "test", "inference"]                                # [if_applicable] Dataset splits if pre-divided.
+  splits: ["train", "test", "inference"]     # [if_applicable] Dataset splits if pre-divided.
                                              # e.g., ["train", "test", "validation"]
   language: not_applicable                   # [if_applicable] ISO 639-1 language code for dataset content
                                              # (e.g., text corpora, annotation labels).
                                              # Distinct from datacard.language. Use not_applicable for
                                              # non-linguistic data (numeric, image, simulation output, etc.)
-  spatial_coverage:                         # [if_applicable] Geographic coverage of the dataset.
-                                             # Use for geospatial datasets or facility-based experiments.
-    description: Advanced Light Source Beamline 8.3.2, Lawrence Berkeley National Laboratory                   # [if_applicable] e.g., "Continental United States" | "SNS Beamline 1B, ORNL"
-    bounding_box:                            # [if_applicable] WGS84 decimal degrees; use for area coverage
-      west: __DECIMAL_DEG__
-      east: __DECIMAL_DEG__
-      south: __DECIMAL_DEG__
-      north: __DECIMAL_DEG__
-  temporal_coverage:                        # [if_applicable] Time period the dataset content represents.
-                                             # NOTE: distinct from dates.data_collection_start/end, which describe
-                                             # when collection occurred. Use temporal_coverage when the dataset
-                                             # describes a specific historical or projected time period that differs
-                                             # from when collection happened.
-                                             # e.g., "Monthly climate averages 1950–2020" collected in 2024:
-                                             #   temporal_coverage.start = 1950-01-01
-                                             #   dates.data_collection_start = 2024-01-01
-    start: 2021-11-22                   # [if_applicable]
-    end: 2026-02-26                     # [if_applicable]
-    description: __DESC__                   # [if_applicable]
+    description: Advanced Light Source Beamline 8.3.2, Lawrence Berkeley National Laboratory       # [if_applicable] e.g., "Continental United States" | "SNS Beamline 1B, ORNL"
+    start: 2021-11-22                        # [if_applicable]
+    end: 2026-02-26                          # [if_applicable]
 
 dataset_scale:
-  record_count: 15                   # [if_applicable] Number of primary records, samples, or files
-  record_unit: files                     # [if_applicable] samples | files | records | timesteps | images | tokens | other
-  compressed_bytes: 201GB               # [if_applicable] Total size when compressed, in bytes
-  uncompressed_bytes: __BYTES__             # [if_applicable] Total size when uncompressed, in bytes
+  record_count: 15                          # [if_applicable] Number of primary records, samples, or files
+  record_unit: files                        # [if_applicable] samples | files | records | timesteps | images | tokens | other
+  compressed_bytes: 201GB                   # [if_applicable] Total size when compressed, in bytes
 
 # --- Dates ------------------------------------------------------
 dates:
@@ -633,7 +715,7 @@ access:
         documentation_url: https://developers.zenodo.org/
         authentication: none           # none | api_key | oauth2 | certificate | other
         version: Version v1
-        rate_limit: __LIMIT__              # e.g., "1000 requests/hour"
+        rate_limit: 30 requests per minute (search REST API endpoints)              # per https://developers.zenodo.org/#how-to-verify-your-quot-zenodo-json-quot-file
 
 # --- Provenance -------------------------------------------------
 # Describes how this dataset was created, what it was derived
@@ -644,26 +726,18 @@ provenance:
                                             # e.g., "Neutron scattering experiment at SNS Beamline 1B"
                                             # e.g., "Monte Carlo simulation using MCNP 6.2"
                                             # e.g., "Derived from raw telemetry via calibration pipeline v2.1"
-  source_data:                              # [if_applicable] Source datasets this dataset was derived from.
-    - name: __NAME__
-      identifier:
-        type: __TYPE__                      # doi | ark | handle | url | local | other
-        value: __VALUE__
-      relationship: __REL__                # is_derived_from | is_based_on | is_part_of | has_part | references | other
-  processing_steps: Raw tomographic reconstructions were converted to 2D grayscale TIFF images. Semantic segmentation masks, instance segmentation masks, and COCO-format annotations were generated through a combination of manual annotation and AI-assisted refinement. Two additional unannotated time-series datasets were included for model inference and temporal analysis.        # [if_applicable] Key processing, cleaning, calibration, or
+  processing_steps: Raw synchrotron micro-CT projection data were reconstructed into tomographic volumes using the ALS microct reconstruction workflow, including the ALS_recon.ipynb reconstruction notebook, which relies on TomoPy and related tomography/image-processing tools. Reconstructed tomographic slices were exported as 2D grayscale TIFF images. Semantic segmentation masks, instance segmentation masks, and COCO-format annotations were generated through a combination of manual annotation and AI-assisted refinement. Two additional unannotated time-series datasets were included for model inference and temporal analysis. 
+                                            # [if_applicable] Key processing, cleaning, calibration, or
                                             # transformation steps applied to produce this dataset.
-  instrumentation: Beamline 8.3.2, Advanced Light Source (ALS), Lawrence Berkeley National Laboratory; synchrotron X-ray micro-computed tomography (micro-CT).         # [if_applicable] Instruments, sensors, detectors, or equipment used.
+  instrumentation: Beamline 8.3.2, Advanced Light Source (ALS), Lawrence Berkeley National Laboratory; synchrotron X-ray micro-computed tomography (micro-CT).
+                                            # [if_applicable] Instruments, sensors, detectors, or equipment used.
                                             # Include make, model, and version where relevant.
-  simulation_details: __DESC__             # [if_applicable] For simulation-derived data: code, version, key
-                                            # parameters, and configuration.
-                                            # e.g., "LAMMPS 23Jun2022, NVT ensemble, 300K, 10ns run, CHARMM36"
-  software_environment:                    # [if_applicable] Software environment used to generate or process
+  software_environment:                     # [if_applicable] Software environment used to generate or process
                                             # this dataset. Captures what is needed for computational reproducibility.
     os: SUSE Linux Enterprise Server 15 SP6 (SLES 15.6)                              # [if_applicable] e.g., "RHEL 8.6" | "Ubuntu 22.04"
-    compiler: GCC                  # [if_applicable] e.g., "GCC 11.3" | "Intel oneAPI 2023.1"
-    container: __CONTAINER__               # [if_applicable] e.g., "docker://registry/image:tag"
     hpc_environment: NERSC Perlmutter HPC system               # [if_applicable] e.g., "module load python/3.10 cuda/11.8 openmpi/4.1"
-    notes: __NOTES__                        # [if_applicable] Additional environment details, key library versions,
+    notes: Reconstruction used the ALS microct workflow and ALS_recon.ipynb notebook from https://github.com/als-computing/microct. The repository contains Jupyter notebooks for reconstructing and visualizing microCT data from ALS Beamline 8.3.2; see the repository and environment.yml for implementation and software-environment details.
+                                            # [if_applicable] Additional environment details, key library versions,
                                             # or reference to a full environment manifest.
                                             # e.g., "See requirements.txt in dataset root"
                                             # e.g., "numpy 1.24, pytorch 2.0.1, h5py 3.8.0"
@@ -675,46 +749,11 @@ provenance:
 #   identification.superseded_by  — links to prior and successor versions
 #   stewardship.versioning_strategy — how versioning is managed over time
 stewardship:
-  level: repository_managed                         # [if_applicable] project_managed | repository_managed | externally_managed
-  maintainer:                               # [if_applicable] Person or organization responsible for ongoing maintenance.
-    type: organization                          # person | organization
-    person:
-      given_name: __GIVEN_NAME__           # [if_applicable]
-      family_name: __FAMILY_NAME__         # [if_applicable]
-      orcid: __ORCID__                     # [if_applicable]
-      email: __EMAIL__                     # [if_applicable]
-      affiliation:
-        name: __ORG_NAME__                 # [if_applicable]
-        ror_id: __ROR_ID__                 # [if_applicable]
-    organization:
-      name: Lawrence Berkeley National Laboratory                   # [if_applicable]
-      ror_id: https://ror.org/02jbv0t02                 # [if_applicable]
+  level: repository_managed             # [if_applicable] project_managed | repository_managed | externally_managed
   update_frequency: ad_hoc              # [if_applicable] none | ad_hoc | monthly | quarterly | annually | other
   retention_policy: Retained and archived by Zenodo in accordance with its preservation policy.            # [if_applicable] e.g., "Retained for 10 years per DOE data management policy"
   versioning_strategy: Zenodo versioning; each published version receives a persistent DOI and all released versions are retained. # [if_applicable] e.g., "Semantic versioning; all versions retained in Zenodo"
                                            # e.g., "Major versions only; prior versions available on request"
-
-# --- Review History ---------------------------------------------
-# [if_applicable] Running history of all formal reviews. Add one
-# entry per review stage in chronological order. Do not overwrite
-# earlier entries when adding new ones.
-reviews:
-  - stage: publication                       # [if_applicable] internal_qa | security | export_control | irb | partner | publication | other
-    purpose: Review prior to public release on Zenodo.                   # [if_applicable] e.g., "Export control review prior to public release"
-    status: approved                     # [if_applicable] not_started | submitted | pending | approved | declined
-    institution:
-      name: Lawrence Berkeley National Laboratory                       # [if_applicable]
-      ror_id: https://ror.org/02jbv0t02                   # [if_applicable]
-    reviewed_by:                           # [if_applicable] Delete the block that does not apply.
-      type: organization                       # person | organization
-      organization:
-        name: Lawrence Berkeley National Laboratory                 # [if_applicable]
-        ror_id: https://ror.org/02jbv0t02                 # [if_applicable]
-    review_date: 2026-05-13            # [if_applicable]
-    approval_document_url: __URL__         # [if_applicable] URL or path to the formal approval letter,
-                                           # signed review document, or official review record.
-                                           # Particularly important for export control, IRB, and security reviews.
-    comments: Dataset approved for public release.                 # [if_applicable]
 
 # --- Related Resources ------------------------------------------
 # [if_applicable] Links to related datasets, publications,
@@ -727,41 +766,42 @@ reviews:
 # Extended (software and AI models):
 #   used_to_create | used_to_process | used_to_analyze | trained_on | evaluated_on
 related_resources:
-  datasets: []
-  # - name: __NAME__
-  #   identifier:
-  #     type: __TYPE__                     # doi | ark | handle | url | local | other
-  #     value: __VALUE__
-  #   relationship: __REL__               # see vocabulary above
 
-  publications: []
+  publications: [
+    - type: other
+      value: AI-Driven Scan-to-Discovery in 20 Minutes: Automated Segmentation of Synchrotron Micro-CT at Scale
+    - type: other
+      value: Synchrotron micro-CT time series of dehydrating grapevine petioles with a legacy semantic segmentation corpus
+  ]
   # - type: other                       # doi | ark | arxiv | url | report | other
   #   value: AI-Driven Scan-to-Discovery in 20 Minutes: Automated Segmentation of Synchrotron Micro-CT at Scale
 
-  software: [forge_feb_seg_model_demo]
-  # - name: forge_feb_seg_model_demo
-  #   version: 1.0
-  #   identifier:
-  #     type: url                     # doi | ark | handle | url | local | other
-  #     value: https://github.com/xiaoyachong/forge_feb_seg_model_demo
-  #   relationship: evaluated_on               # see vocabulary above
+  software: [
+    - name: forge_feb_seg_model_demo
+      version: 1.0
+      identifier:
+        type: url
+        value: https://github.com/als-computing/forge_feb_seg_model_demo
+      relationship: evaluated_on
+  ]
 
-  ai_models: [SAM3, DINOv3-Seg]
-  # - name: SAM3
-  #   version: 1.0
-  #   date_accessed: 2026-02-24
-  #   identifier:
-  #     type: url                     # doi | ark | handle | url | local | other
-  #     value: https://github.com/facebookresearch/sam3
-  #   relationship: trained_on               # see vocabulary above
+  ai_models: [
+    - name: SAM3
+      version: 1.0
+      date_accessed: 2026-02-24
+      identifier:
+        type: url                     # doi | ark | handle | url | local | other
+        value: https://github.com/facebookresearch/sam3
+      relationship: trained_on               # see vocabulary above
 
-  # - name: DINOv3-Seg
-  #   version: 1.0
-  #   date_accessed: 2026-02-24
-  #   identifier:
-  #     type: url                     # doi | ark | handle | url | local | other
-  #     value: https://docs.lightly.ai/train/stable/semantic_segmentation.html
-  #   relationship: trained_on               # see vocabulary above
+    - name: DINOv3-Seg
+      version: 1.0
+      date_accessed: 2026-02-24
+      identifier:
+        type: url                     # doi | ark | handle | url | local | other
+        value: https://docs.lightly.ai/train/stable/semantic_segmentation.html
+      relationship: trained_on               # see vocabulary above
+  ]
 
 # --- Compliance -------------------------------------------------
 # [extended] Populate when release_status = under_review | approved | published.
@@ -778,11 +818,10 @@ compliance:
 # [pub] Populate when release_status = approved | published.
 # Replace ALL ${...} placeholders in the BibTeX block below before publishing.
 citation:
-  report_number: __NUMBER__                # [if_applicable] e.g., SAND2024-XXXXX | LAUR-XX-XXXXX | ORNL/TM-2024/XXXXX
   # [pub] Recommended citation in BibTeX format.
   # IMPORTANT: replace every ${...} value below before publishing.
   preferred_citation: |
-    @dataset{elavarthi2026petiole},
+    @dataset{elavarthi2026petiole,
       author    = {Elavarthi, Pradyumna and Chong, Xiaoya and Abramov, David and Clark, Elizabeth G. and Koepp, Wiebke and McReynolds, Dylan and Parkinson, Dilworth Y. and Hammermeister, Amanda and Albuquerque, Catarina and McElrone, Andrew J. and Chavez, Tanny and Hexemer, Alexander and Zwart, Petrus},
       title     = {Synchrotron micro-CT time series of dehydrating grapevine petioles with a legacy semantic segmentation corpus},
       year      = {2026},
@@ -790,7 +829,6 @@ citation:
       doi       = {10.5281/zenodo.19476729},
       url       = {https://doi.org/10.5281/zenodo.19476729}
     }
-
 
 # ============================================================
 # LEVEL 3 — AI-READY & TRUSTWORTHY     [REQUIRED FOR AI/ML]
@@ -825,11 +863,7 @@ data_quality:
                                             # missing due to instrument downtime on 2023-04-12"
   known_issues: The dataset represents only grapevine petiole samples acquired at Beamline 8.3.2 of the Advanced Light Source. Small cells and ambiguous tissue boundaries are more challenging to annotate and segment.            # [ai_ready] e.g., "Sensor drift observed after 2023-06-01T12:00:00Z"
   validation_methods: Annotations were generated through a combination of manual annotation and AI-assisted refinement, followed by expert review and quality control.             # [ai_ready] e.g., "Cross-validated against NIST SRM 640f"
-  noise_characteristics: __DESC__          # [if_applicable]
   uncertainty_notes: Annotation uncertainty is highest near weakly contrasted tissue boundaries and for densely packed, small anatomical structures.             # [if_applicable] e.g., "Measurement uncertainty ±0.5% (k=2) per ISO/IEC Guide 98-3"
-  missing_data_codes: []                   # [if_applicable]
-  # - code: __CODE__                       # e.g., -999 | NaN | NULL
-  #   description: __DESC__               # e.g., "Sensor malfunction" | "Below detection limit"
 
 # --- Integrity & Fixity -----------------------------------------
 # [ai_ready] Checksums enable automated validation of data
