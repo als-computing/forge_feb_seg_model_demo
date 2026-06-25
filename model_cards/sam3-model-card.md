@@ -2,14 +2,14 @@
 language:
 - en # ISO language tag
 tags:
-- project:genesis # include on all GENESIS project models
-- project:model_team_name # include your _short_ model team name e.g. MOAT
-- type:model # use other types include {agent, eval, framework, model, etc...}
-- science:lightsource # what kind of science is this for (e.g., materials, biology, lightsource, fusion, climate, etc.)
-- risk:general # indicates level of risk review {general, reviewed, restricted}
-license: {spdx_license_id} # use an SPDX license identifier https://spdx.org/licenses/
-license_name: {license_name}  # If license = other (license not in https://hf.co/docs/hub/repositories-licenses), specify an id for it here, like `my-license-1.0`. if not delete this line
-license_link: {license_link}  # If license = other, specify "LICENSE" or "LICENSE.md" to link to a file of that name inside the repo, or a URL to a remote file. if not delete this line
+- project: genesis # include on all GENESIS project models
+- project: SYNAPS-I # include your _short_ model team name e.g. MOAT
+- type: model # use other types include {agent, eval, framework, model, etc...}
+- science: imaging # what kind of science is this for (e.g., materials, biology, lightsource, fusion, climate, etc.)
+- risk: general # indicates level of risk review {general, reviewed, restricted}
+license: other # use an SPDX license identifier https://spdx.org/licenses/
+license_name: SAM License  # If license = other (license not in https://hf.co/docs/hub/repositories-licenses), specify an id for it here, like `my-license-1.0`. if not delete this line
+license_link: https://github.com/facebookresearch/sam3/blob/main/LICENSE  # If license = other, specify "LICENSE" or "LICENSE.md" to link to a file of that name inside the repo, or a URL to a remote file. if not delete this line
 base_model: SAM3 # if fine tuning, include the basemodel url here
 new_version:  # if this model has been superseeded by a new version, omit for now
 datasets:
@@ -30,7 +30,7 @@ metrics:
   - AR_large
 ---
 
-# SAM3
+# SAM3 for Petiole Segmentation
 
 This model is based on Meta AI's Segment Anything Model 3 (SAM3) and has been fine-tuned on a petiole micro-CT dataset acquired at the Advanced Light Source (ALS). It is designed for instance segmentation of anatomical structures in high-resolution synchrotron micro-CT images.
 
@@ -38,19 +38,17 @@ This model is based on Meta AI's Segment Anything Model 3 (SAM3) and has been fi
 
 ## Developed by
 
-ALS Computing Group
+Xiaoya Chong, Pradyumna Elavarthi, Tanny Chavez, Petrus Zwart, Alexander Hexemer
 
 ## Contributed by  
 
-Andrew McElrone
+Andrew McElrone and Elizabeth Clark
 
 ## Model Changelog 
  
 + **2026-06-23** initial public version
 
 ## Model short description
-
-  
 
 + Task: Segmentation with Concepts
 + Architecture: SAM3
@@ -61,7 +59,6 @@ Andrew McElrone
 
 ## Model description
 
-
 1. This model is based on the SAM3 Perception Encoder (840M parameters) and has been fine-tuned for segmentation with concepts in grapevine petiole micro-CT images.
 2. The model supports concept-guided instance segmentation, where users can provide a text prompt (e.g., "xylem vessels") to identify and segment individual instances of a specific cell type.
 3. The training dataset consists of 42 manually annotated petiole micro-CT TIFF images with a resolution of 2560 × 2560 pixels and includes 7 cell classes. 
@@ -70,15 +67,13 @@ Andrew McElrone
 
 ## Finetuned from model (optional)
 
-The base model is sam3: https://github.com/facebookresearch/sam3
+The base model is SAM3: https://github.com/facebookresearch/sam3
 
 ## Model Type
 
 SAM3 Perception Encoder 
  
 ## Inputs and outputs
-
-
 
 1. Input: The model accepts a 640 × 640 grayscale micro-CT image patch and a text prompt describing the target concept to segment (e.g., "xylem vessels", "cortex", or other annotated cell types). During training, high-resolution petiole micro-CT images (2560 × 2560 pixels) are divided into overlapping patches.
 2. Input: To introduce scale variation during training, image patches are randomly resized and then padded to the target resolution required by the ViT backbone. This strategy improves robustness to objects of different sizes while maintaining compatibility with the fixed-resolution input constraint of the ViT architecture.
@@ -91,11 +86,7 @@ The model is trained on NERSC with 4 GPUs.
 
 ### Hardware
 
-
-
 This model was trained on 4 NVIDIA A100 GPUs on the NERSC Perlmutter supercomputer: https://www.nersc.gov/systems/perlmutter/
-
-
 
 ### Software
 
@@ -110,15 +101,23 @@ The pyproject.toml file can be found at: https://github.com/als-computing/forge_
 
 ## Papers and Scientific Outputs 
 
+```bibtex
+@unpublished{ChongEtAl2026_AIDrivenScanDiscovery,
+  author    = {Chong, Xiaoya and Abramov, David and Elavarthi, Pradyumna and Clark, Elizabeth G. and Zwart, Petrus and Koepp, Wiebke and Parkinson, Dilworth Y. and McReynolds, Dylan and Bilieux, Hassina and Allan, Daniel and Yan, Hanfei and Weker, Johanna Nelson and Cherukara, Mathew Joseph and Mehta, Apurva and Schwarz, Nicholas and McElrone, Andrew and Chavez, Tanny and Hexemer, Alexander},
+  date      = {2026},
+  title     = {AI-Driven Scan-to-Discovery in 20 Minutes: Automated Segmentation of Synchrotron Micro-CT at Scale},
+  note      = {Under review at Nature Communications},
+  keywords  = {submitted},
+}
+```
 
 ## Model License
 
-
+The model is currently not open source.
 
 ## Contact Info and Model Card Authors
 
 Correspondence and requests for materials should be addressed to Tanny Chavez (tanchavez@lbl.gov) or Alexander Hexemer (ahexemer@lbl.gov).
-
 
 # Intended Uses 
 
@@ -130,17 +129,15 @@ This model is intended for instance segmentation with concepts in synchrotron mi
 
 ### Primary Intended Users 
 
-Beamline users at Beamline 8.3.2 of the Advanced Light Source (ALS). Scientists and facility users at ALS and other synchrotron or imaging facilities seeking automated concept-guided instance segmentation of high-resolution micro-CT datasets.
+Beamline users at Beamline 8.3.2 of the Advanced Light Source (ALS). Scientists and facility users at ALS and other synchrotron or imaging facilities seeking automated concept-guided instance segmentation of high-resolution imaging datasets.
 
 ### Mission Relevance 
 
-
-It is part of the DOE SYNAPS-I project.
+It is part of the SYNAPS-I project, which was supported by the U.S. DOE, Office of Science, Office of Advanced Scientific Computing Research (ASCR), award “The Transformational AI Models Consortium” under Contract No. AC02-05CH11231.
 
 ## Out-of-Scope Use Cases
 
 This model is not intended for use on non-petiole micro-CT datasets without additional validation or fine-tuning.
-
 
 # How to Use
 
@@ -156,7 +153,7 @@ https://github.com/als-computing/forge_feb_seg_model_demo/tree/main#environment-
 To train the model, follow the official SAM3 training guide:
 https://github.com/facebookresearch/sam3/blob/main/README_TRAIN.md
 
-Prepare a COCO-format dataset and a `.yaml` configuration file for your custom dataset, then finetune the model.
+Prepare a [COCO-format](https://cocodataset.org/#format-results) dataset and a `.yaml` configuration file for your custom dataset, then finetune the model.
 
 ## Inference Configuration
 
@@ -209,14 +206,13 @@ masks, boxes, scores = output["masks"], output["boxes"], output["scores"]
 > a preview for what foreign adversaries will possess in the near future. Understanding the
 > nature of these risks as they emerge is vital for national defense and homeland security.
 
-
+No direct cyberattack, CBRNE, or national-security enabling risks have been identified for this model. The model is a narrow computer vision system for segmenting grapevine petiole micro-CT images. Residual risks are limited to scientific and operational use: inaccurate segmentations may lead to incorrect measurements, performance may degrade outside the trained imaging/domain conditions, ambiguous prompts may produce incorrect masks, and users may over-rely on outputs without expert review. Standard data governance and software supply-chain controls should also be applied.
 
 ## Limitations
 
 + This model was trained exclusively on grapevine petiole micro-CT datasets acquired under specific imaging conditions and may not generalize well to other plant species, tissues, imaging modalities, or acquisition settings.
 
 + The model supports concept-guided segmentation only for the cell classes represented in the training dataset. Performance may degrade when prompted with unseen concepts or structures that were not included during training.
-
 
 # Training details 
 
@@ -265,8 +261,6 @@ Dataset DOI: https://doi.org/10.5281/zenodo.19476729
 
 A 20% hold-out subset of the dataset was reserved for model evaluation and was not used during training. The dataset consists of high-resolution synchrotron micro-CT images of grapevine petioles acquired at Beamline 8.3.2 of the Advanced Light Source (ALS), with annotations spanning seven cell classes.
 
-## Evaluation Procedure 
-
 ## Evaluation Procedure
 
 The model was evaluated on a held-out 20% subset of the grapevine petiole micro-CT dataset. Evaluation focused on **concept-guided instance segmentation**, where the model receives an image patch and a text prompt (e.g., *"xylem vessels"*) and predicts instance masks for the specified concept.
@@ -288,15 +282,6 @@ Performance was measured using the standard **COCO evaluation protocol**, includ
 
 The reported metrics provide a benchmark for model performance on unseen petiole micro-CT data.
 
-
-## Uncertainty Quantification. 
-
-
 ## Evaluation results 
 
 The model achieved an AP of 54.8 and an AP_50 of 70.1 on the held-out evaluation dataset, demonstrating strong concept-guided instance segmentation performance. Performance on small cells was lower than on medium and large objects due to their small size, dense distribution, and ambiguous boundaries. Nevertheless, the model maintained robust performance across object scales, indicating its effectiveness in segmenting complex biological structures in petiole micro-CT images.
-
- 
-# More Information (optional) 
-
-
